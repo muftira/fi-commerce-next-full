@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '@/lib/prisma';
 import { ApiError, successResponse } from '@/utils/response';
 import { errorResponse } from '@/utils/errorResponse';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import Validator from 'fastest-validator';
 import { v2 as cloudinary } from 'cloudinary';
 import jwt from 'jsonwebtoken';
