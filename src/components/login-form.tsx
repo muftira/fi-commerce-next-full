@@ -36,6 +36,8 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
           name: response.data?.data.data.fullName,
           role: response.data?.data.data.role,
           token: response.data?.data.token,
+          profileImage : response.data?.data.data.imageUser,
+          email: response.data?.data.data.email
         })
       );
       router.push(response.data?.data.data.role.roleName === 'admin' ? '/dashboard' : '/');
