@@ -9,7 +9,7 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: async (req: Request, file: Express.Multer.File) => {
     return {
-      folder: 'WOS',
+      folder: 'fi-commerce',
       format:
         file.mimetype === 'image/png'
           ? 'png'
