@@ -60,4 +60,10 @@ export type JwtPayload = {
   email: string;
 }
 
+export type UserLogin = {
+  name: string;
+  email: string;
+  profilePicture: string | null;
+};
+
 
