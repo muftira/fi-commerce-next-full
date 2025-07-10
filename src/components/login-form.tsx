@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Loader2 } from 'lucide-react';
 
 // icons
 import { BiShowAlt, BiSolidHide } from 'react-icons/bi';
@@ -18,6 +19,7 @@ import { Login } from '@/types';
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
   const router = useRouter();
   const [hidePassword, setHidePassword] = useState<boolean>(false);
+    const [isLoader, setIsLoader] = useState<boolean>(false);
   const [loginData, setLoginData] = useState<Login>({
     status: true,
     email: '',
@@ -26,7 +28,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 
   const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    delete loginData.status;
+    setIsLoader(true);
     const response = await fetchData('POST', 'api/user/login', loginData);
     if (response.success) {
       localStorage.setItem(
@@ -36,12 +38,14 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
           name: response.data?.data.data.fullName,
           role: response.data?.data.data.role,
           token: response.data?.data.token,
-          profileImage : response.data?.data.data.imageUser,
+          profilePicture : response.data?.data.data.imageUser,
           email: response.data?.data.data.email
         })
       );
+      setIsLoader(false);
       router.push(response.data?.data.data.role.roleName === 'admin' ? '/dashboard' : '/');
     } else {
+      setIsLoader(false);
       setLoginData({ ...loginData, status: false });
     }
   };
@@ -131,6 +135,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                 </div>
                 <div className="w-full flex flex-col items-center space-y-2">
                   <Button type="submit" className="w-full" onClick={(e) => handleLogin(e)}>
+                    {isLoader ? <Loader2 className={`${isLoader && 'animate-spin'}`} /> : ''}
                     Login
                   </Button>
                   {!loginData.status && (

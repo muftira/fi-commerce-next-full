@@ -63,7 +63,7 @@ export type JwtPayload = {
 export type UserLogin = {
   name: string;
   email: string;
-  profilePicture: string | null;
+  profilePicture: { url: string | null }
 };
 
 

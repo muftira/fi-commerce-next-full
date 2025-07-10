@@ -29,6 +29,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { useRouter } from "next/router"
 
 export function NavUser({
   user,
@@ -40,6 +41,11 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const Router = useRouter()
+  const handleLogout = () :void=> {
+    localStorage.removeItem("fiCommerce")
+    Router.push("/auth/login")
+  }
 
   return (
     <SidebarMenu>
@@ -102,7 +108,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleLogout()}>
               <LogOut />
               Log out
             </DropdownMenuItem>
