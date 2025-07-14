@@ -229,7 +229,7 @@ export default function addproduct() {
         </div>)}
       </div>
       <div className="flex justify-end gap-4">
-        <Button className="w-[200px] mt-10">Add Product</Button>
+        <Button className="w-[200px] mt-10">Create Product</Button>
       </div>
     </div>
   );
