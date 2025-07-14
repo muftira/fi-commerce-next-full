@@ -66,4 +66,15 @@ export type UserLogin = {
   profilePicture: { url: string | null }
 };
 
+export type Variants = {
+  variant: string;
+  option: string;
+}
+
+export type OptionVariants ={
+  value: string;
+  label: string;
+  isSelected: boolean;
+}
+
 
