@@ -111,10 +111,15 @@ export default function addproduct() {
       newOptions.push(option.value)  
     })
 
-    const newVariant = [...variants];
-    newVariant[index] = { ...newVariant[index], option: newOptions };
-    setVariants(newVariant);
+    const newOption = [...variants];
+    newOption[index] = { ...newOption[index], option: newOptions };
+    setVariants(newOption);
   };
+
+  useEffect(() => {
+    console.log('variants ==>',variants);
+    
+  }, [variants]);
 
   return (
     <div className="p-4">
