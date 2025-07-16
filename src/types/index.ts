@@ -66,15 +66,52 @@ export type UserLogin = {
   profilePicture: { url: string | null }
 };
 
-export type Variants = {
+export type VariantsData = {
   variant: string;
-  option: string;
+  option: string[];
 }
 
-export type OptionVariants ={
+export type OptionVariants = {
   value: string;
   label: string;
-  isSelected: boolean;
+  isSelected?: boolean;
 }
+
+export type OptionSelected = {
+  option: OptionVariants[];
+}
+
+export type RequestProduct = {
+  productName: string,
+  imageProduct: File | null,
+  categoryName: string,
+  description: string,
+  status: string,
+  options: Option[],
+  variants: Variant[]
+}
+
+export type Option = {
+  name: string;
+  isDeleted: boolean;
+  value: Value[]
+}
+export type Value = {
+  name: string;
+  value: number;
+  isDeleted: boolean;
+}
+
+export type Variant = {
+  option1: string,
+  option2: string,
+  price: number,
+  quantity: number,
+  weight: number,
+  discount: number,
+  isDeleted: boolean
+  sku: string
+}
+
 
 

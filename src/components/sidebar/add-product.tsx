@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 
 // component
 import { Input } from '@/components/ui/input';
@@ -14,13 +14,23 @@ import { Trash2 } from 'lucide-react';
 import { CategoryOptions, VariantsOptions, ColorOptions, SizeOptions } from '@/utils/data';
 
 // type
-import { Variants, OptionVariants } from '@/types';
+import { VariantsData, OptionVariants, OptionSelected, RequestProduct } from '@/types';
 
 export default function addproduct() {
   const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
-  const [variants, setVariants] = useState<Variants[]>([]);
+  const [variants, setVariants] = useState<VariantsData[]>([]);
   const [optionVariant, setOptionVariant] = useState<OptionVariants[]>(VariantsOptions);
+  const [optionSelected, setOptionSelected] = useState<OptionSelected[]>([{ option: [] }, { option: [] }]);
+  const [data, setData] = useState<RequestProduct>({
+    productName: '',
+    imageProduct: null,
+    categoryName: '',
+    description: '',
+    status: '',
+    options: [],
+    variants: []
+  });
 
   const handleChangePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -48,7 +58,7 @@ export default function addproduct() {
     if (variants.length == 2) {
       return;
     }
-    setVariants([...variants, { variant: '', option: '' }]);
+    setVariants([...variants, { variant: '', option: [] }]);
   };
 
   const handleDeleteVariant = (index: number): void => {
@@ -58,10 +68,19 @@ export default function addproduct() {
     setVariants(updatedVariants);
   };
 
-  const handleChangeVariant = (e: OptionVariants | null): void => {
+  const handleChangeVariant = (index: number, e: OptionVariants | null): void => {
     if (!e) return;
+    const isChecked = optionVariant.some((variant) => variant.isSelected);
     let data: OptionVariants[] = [];
-    if (variants.length === 1) {
+
+    if (variants.length === 2 && isChecked) {
+      data = optionVariant.map((variant) => {
+        return {
+          ...variant,
+          isSelected: true,
+        };
+      })
+    } else {
       data = optionVariant.map((variant) => {
         return {
           ...variant,
@@ -69,30 +88,32 @@ export default function addproduct() {
         };
       })
     }
-
-    if (variants.length === 2) {
-      data = optionVariant.map((variant) => {
-        return {
-          ...variant,
-          isSelected: true,
-        };
-      })
-    }
+    const newVariant = [...variants];
+    newVariant[index] = { ...newVariant[index], variant: e.value };
+    setVariants(newVariant);
     setOptionVariant(data);
   }
 
-  const handleOption = (index: number) => {
-    const isFiltered = optionVariant.filter((option) => option.isSelected).some(opt => opt.value === 'Color')
-    let data ;
-    if (index === 0) {
-      data = isFiltered ? ColorOptions : SizeOptions
-      return data;
-    }
-    if (index === 1) {
-      data = isFiltered ? SizeOptions : ColorOptions
-      return data;
-    }
+  const handleFocus = (index: number) => {
 
+    const isChecked = variants[index].variant === 'Color'
+
+    const updated = [...optionSelected];
+    updated[index] = { option: isChecked ? ColorOptions : SizeOptions };
+    setOptionSelected(updated);
+  };
+
+  const handleChangeOption = (index: number, e: OptionVariants[] | null): void => {
+    if (!e) return;
+
+    let newOptions: string[] = []
+    e.map((option: { value: string}) => {
+      newOptions.push(option.value)  
+    })
+
+    const newVariant = [...variants];
+    newVariant[index] = { ...newVariant[index], option: newOptions };
+    setVariants(newVariant);
   };
 
   return (
@@ -171,7 +192,7 @@ export default function addproduct() {
                       name="variant"
                       options={optionVariant.filter((option) => !option.isSelected)}
                       className="basic-single w-[400px]"
-                      onChange={(e) => handleChangeVariant(e)}
+                      onChange={(e) => handleChangeVariant(index, e)}
                     />
                   </div>
                   <div className='flex flex-row gap-6'>
@@ -180,9 +201,13 @@ export default function addproduct() {
                     </Label>
                     <Select
                       isMulti
-                      name="option" 
-                      options={handleOption(index) || []}
-                      className="basic-multi-select w-[400px]" />
+                      name="option"
+                      options={optionSelected && optionSelected[index].option}
+                      className="basic-multi-select w-[400px]"
+                      onChange={(e) => handleChangeOption(index, Array.from(e))}
+                      onFocus={() => handleFocus(index)}
+                      isDisabled={!variants[index].variant}
+                    />
                   </div>
                 </div>
                 <Button variant='outline' onClick={() => handleDeleteVariant(index)} className="w-[50px]">
@@ -191,7 +216,7 @@ export default function addproduct() {
               </div>
             ))}
             {variants.length < 2 && (
-              <Button onClick={() => handleAddVariant()} className="w-[150px]"> + Add Variant</Button>
+              <Button onClick={() => handleAddVariant()} className="w-[150px]" disabled={!variants[0].variant}> + Add Variant</Button>
             )}
           </div>
         )}
