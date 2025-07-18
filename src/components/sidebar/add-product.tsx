@@ -77,7 +77,7 @@ export default function addproduct() {
 
   const handleDeleteVariant = (index: number, value: string): void => {
     const updatedOptionVariant = optionVariant.map((variant) => {
-      if(variant.value === value) {
+      if (variant.value === value) {
         return {
           ...variant,
           isSelected: false,
@@ -86,7 +86,7 @@ export default function addproduct() {
       return variant;
     });
 
-    const updatedVariants = variants.filter((_, i) => index !== i);
+    const updatedVariants = variants.filter((variant, i) => variant.variant !== value);
     setOptionVariant(updatedOptionVariant);
     setVariants(updatedVariants);
   };
@@ -96,14 +96,7 @@ export default function addproduct() {
     const isChecked = optionVariant.some((variant) => variant.isSelected);
     let data: OptionVariants[] = [];
 
-    if (variants.length === 2 && isChecked) {
-      data = optionVariant.map((variant) => {
-        return {
-          ...variant,
-          isSelected: true,
-        };
-      })
-    } else {
+    if (index === 0) {
       data = optionVariant.map((variant) => {
         return {
           ...variant,
@@ -111,6 +104,19 @@ export default function addproduct() {
         };
       })
     }
+
+    if (index === 1) {
+      data = optionVariant.map((variant) => {
+        if (variant.value === e.value) {
+          return {
+            ...variant,
+            isSelected: true,
+          };
+        }
+        return variant;
+      })
+    }
+
     const newVariant = [...variants];
     newVariant[index] = { ...newVariant[index], variant: e.value };
     setVariants(newVariant);
@@ -151,11 +157,21 @@ export default function addproduct() {
     })
     return option;
   }
+
+  const handleValueVariant = (index: number, value: string) => {
+    // const { name, value } = e.target;
+    // const updatedVariant = [...variants];
+    // updatedVariant[index] = { ...updatedVariant[index], [name]: value };
+    // setVariants(updatedVariant);
+
+    return value ? { value: value, label: value, isSelected: true } : { value: '', label: '' };
+  };
   // const handleVariantTable = () => {
 
   // };
   useEffect(() => {
     console.log('optionsvariants ==>', optionVariant);
+    console.log('variants ==>', variants);
 
   }, [optionVariant]);
 
@@ -232,7 +248,7 @@ export default function addproduct() {
                       Variant {index + 1} <Asterisk />
                     </Label>
                     <Select
-                      value={ variant.variant ? { value: variant.variant, label: variant.variant, isSelected: true } : undefined}
+                      value={handleValueVariant(index, variant.variant)}
                       name="variant"
                       options={handleOptionVariant()}
                       className="basic-single w-[400px]"
