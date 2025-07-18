@@ -9,12 +9,21 @@ import { Button } from '@/components/ui/button';
 import Select from 'react-select';
 import { MdOutlineAddPhotoAlternate } from 'react-icons/md';
 import { Trash2 } from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 // Data
 import { CategoryOptions, VariantsOptions, ColorOptions, SizeOptions } from '@/utils/data';
 
 // type
-import { VariantsData, OptionVariants, OptionSelected, RequestProduct } from '@/types';
+import { VariantsData, OptionVariants, OptionSelected, RequestProduct, VariantTable } from '@/types';
 
 export default function addproduct() {
   const [images, setImages] = useState<File[]>([]);
@@ -22,6 +31,8 @@ export default function addproduct() {
   const [variants, setVariants] = useState<VariantsData[]>([]);
   const [optionVariant, setOptionVariant] = useState<OptionVariants[]>(VariantsOptions);
   const [optionSelected, setOptionSelected] = useState<OptionSelected[]>([{ option: [] }, { option: [] }]);
+  const [variantTable, setVariantTable] = useState<VariantTable[]>([]);
+
   const [data, setData] = useState<RequestProduct>({
     productName: '',
     imageProduct: null,
@@ -58,13 +69,25 @@ export default function addproduct() {
     if (variants.length == 2) {
       return;
     }
-    setVariants([...variants, { variant: '', option: [] }]);
+    const dataVariant = [...variants, { variant: '', option: [] }]
+    const dataVariantTable = [...variantTable, { Variant: '', detailVariant: [{ name: '', price: 0, quantity: 0, weight: 0, discount: 0, sku: '', isDeleted: false }] }]
+    setVariants(dataVariant);
+    setVariantTable(dataVariantTable);
   };
 
-  const handleDeleteVariant = (index: number): void => {
-    console.log('Deleting index:', index);
+  const handleDeleteVariant = (index: number, value: string): void => {
+    const updatedOptionVariant = optionVariant.map((variant) => {
+      if(variant.value === value) {
+        return {
+          ...variant,
+          isSelected: false,
+        };
+      }
+      return variant;
+    });
+
     const updatedVariants = variants.filter((_, i) => index !== i);
-    console.log('Updated variants:', updatedVariants);
+    setOptionVariant(updatedOptionVariant);
     setVariants(updatedVariants);
   };
 
@@ -92,6 +115,8 @@ export default function addproduct() {
     newVariant[index] = { ...newVariant[index], variant: e.value };
     setVariants(newVariant);
     setOptionVariant(data);
+
+    // const dataVariantTable = [...variantTable];
   }
 
   const handleFocus = (index: number) => {
@@ -107,8 +132,8 @@ export default function addproduct() {
     if (!e) return;
 
     let newOptions: string[] = []
-    e.map((option: { value: string}) => {
-      newOptions.push(option.value)  
+    e.map((option: { value: string }) => {
+      newOptions.push(option.value)
     })
 
     const newOption = [...variants];
@@ -116,10 +141,23 @@ export default function addproduct() {
     setVariants(newOption);
   };
 
+  const handleOptionVariant = () => {
+    const option = optionVariant.filter((opt) => !opt.isSelected).map((opt) => {
+      return {
+        value: opt.value,
+        label: opt.label,
+        isSelected: false,
+      }
+    })
+    return option;
+  }
+  // const handleVariantTable = () => {
+
+  // };
   useEffect(() => {
-    console.log('variants ==>',variants);
-    
-  }, [variants]);
+    console.log('optionsvariants ==>', optionVariant);
+
+  }, [optionVariant]);
 
   return (
     <div className="p-4">
@@ -194,8 +232,9 @@ export default function addproduct() {
                       Variant {index + 1} <Asterisk />
                     </Label>
                     <Select
+                      value={ variant.variant ? { value: variant.variant, label: variant.variant, isSelected: true } : undefined}
                       name="variant"
-                      options={optionVariant.filter((option) => !option.isSelected)}
+                      options={handleOptionVariant()}
                       className="basic-single w-[400px]"
                       onChange={(e) => handleChangeVariant(index, e)}
                     />
@@ -215,7 +254,7 @@ export default function addproduct() {
                     />
                   </div>
                 </div>
-                <Button variant='outline' onClick={() => handleDeleteVariant(index)} className="w-[50px]">
+                <Button variant='outline' onClick={() => handleDeleteVariant(index, variant.variant)} className="w-[50px]">
                   <Trash2 />
                 </Button>
               </div>
@@ -225,6 +264,31 @@ export default function addproduct() {
             )}
           </div>
         )}
+        {variants.length > 0 && (<Table>
+          <TableCaption>A list of your recent Variants.</TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Invoice</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Method</TableHead>
+              <TableHead>Method</TableHead>
+              <TableHead>Method</TableHead>
+              <TableHead>Method</TableHead>
+              <TableHead>Method</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell>Credit Card</TableCell>
+              <TableCell>Credit Card</TableCell>
+              <TableCell>Credit Card</TableCell>
+              <TableCell>Credit Card</TableCell>
+              <TableCell>Credit Card</TableCell>
+              <TableCell>Credit Card</TableCell>
+              <TableCell>Credit Card</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>)}
         {variants.length === 0 && (<div className='flex flex-col gap-6'>
           <div className="flex flex-row justify-between items-center">
             <Label className="font-bold" htmlFor="Price">

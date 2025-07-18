@@ -113,5 +113,20 @@ export type Variant = {
   sku: string
 }
 
+export type VariantTable = {
+  Variant: string;
+  detailVariant: DetailOptions[];
+}
+
+export type DetailOptions = {
+  name: string;
+  price: number;
+  quantity: number;
+  weight: number;
+  discount: number;
+  sku: string;
+  isDeleted: boolean;
+}
+
 
 
