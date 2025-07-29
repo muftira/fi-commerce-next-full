@@ -158,14 +158,6 @@ export default function addproduct() {
     return option;
   }
 
-  const handleValueVariant = (index: number, value: string) => {
-    // const { name, value } = e.target;
-    // const updatedVariant = [...variants];
-    // updatedVariant[index] = { ...updatedVariant[index], [name]: value };
-    // setVariants(updatedVariant);
-
-    return value ? { value: value, label: value, isSelected: true } : { value: '', label: '' };
-  };
   // const handleVariantTable = () => {
 
   // };
@@ -248,7 +240,7 @@ export default function addproduct() {
                       Variant {index + 1} <Asterisk />
                     </Label>
                     <Select
-                      value={handleValueVariant(index, variant.variant)}
+                      value={variant.variant ? { value: variant.variant, label: variant.variant, isSelected: true } : { value: '', label: 'Select...' }}
                       name="variant"
                       options={handleOptionVariant()}
                       className="basic-single w-[400px]"
