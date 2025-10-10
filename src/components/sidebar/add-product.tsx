@@ -160,12 +160,13 @@ export default function addproduct() {
 
   // const handleVariantTable = () => {
 
-  // };
+  // }
+
   useEffect(() => {
     console.log('optionsvariants ==>', optionVariant);
     console.log('variants ==>', variants);
 
-  }, [optionVariant]);
+  }, [optionVariant, variants]);
 
   return (
     <div className="p-4">
@@ -268,33 +269,47 @@ export default function addproduct() {
               </div>
             ))}
             {variants.length < 2 && (
-              <Button onClick={() => handleAddVariant()} className="w-[150px]" disabled={!variants[0].variant}> + Add Variant</Button>
+              <Button onClick={() => handleAddVariant()} className="w-[150px]" disabled={!variants[0].option.length}> + Add Variant</Button>
             )}
           </div>
         )}
         {variants.length > 0 && (<Table>
-          <TableCaption>A list of your recent Variants.</TableCaption>
+          {variants[0].option?.length == 0 && <TableCaption>A list of your recent Variants.</TableCaption>}
           <TableHeader>
             <TableRow>
-              <TableHead>Invoice</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Method</TableHead>
-              <TableHead>Method</TableHead>
-              <TableHead>Method</TableHead>
-              <TableHead>Method</TableHead>
-              <TableHead>Method</TableHead>
+              {variants[0] && <TableHead>{variants[0].variant || 'Variant 1'}</TableHead>}
+              {variants[1] && <TableRow className='grid grid-cols-6'>
+                <TableHead className='translate-y-3.5'>{variants[1].variant || 'Variant 2'}</TableHead>
+                <TableHead className='translate-y-3.5'>Price (IDR)</TableHead>
+                <TableHead className='translate-y-3.5'>Quantity</TableHead>
+                <TableHead className='translate-y-3.5'>Weight (gram)</TableHead>
+                <TableHead className='translate-y-3.5'>Discount</TableHead>
+                <TableHead className='translate-y-3.5'>SKU</TableHead></TableRow>}
+              {!variants[1] && <><TableHead>Price (IDR)</TableHead>
+                <TableHead>Quantity</TableHead>
+                <TableHead>Weight (gram)</TableHead>
+                <TableHead>Discount</TableHead>
+                <TableHead>SKU</TableHead></>}
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow>
-              <TableCell>Credit Card</TableCell>
-              <TableCell>Credit Card</TableCell>
-              <TableCell>Credit Card</TableCell>
-              <TableCell>Credit Card</TableCell>
-              <TableCell>Credit Card</TableCell>
-              <TableCell>Credit Card</TableCell>
-              <TableCell>Credit Card</TableCell>
-            </TableRow>
+            {variants[0].option?.map((opt1, index) => <TableRow key={index}>
+              {variants[0] && <TableCell>{opt1}</TableCell>}
+              {variants[1] && variants[1].variant ? variants[1].option.map(opt2 => <TableRow className='grid grid-cols-6'>
+                <TableCell className='self-center'>{opt2 || ''}</TableCell>
+                <TableCell><Input className='w-[80px]' /></TableCell>
+                <TableCell><Input className='w-[80px]' /></TableCell>
+                <TableCell><Input className='w-[80px]' /></TableCell>
+                <TableCell><Input className='w-[80px]' /></TableCell>
+                <TableCell><Input className='w-[80px]' /></TableCell>
+              </TableRow>) :
+                variants[1] && <TableCell></TableCell>}
+              {!variants[1] && <><TableCell><Input className='w-[80px]' /></TableCell>
+                <TableCell><Input className='w-[80px]' /></TableCell>
+                <TableCell><Input className='w-[80px]' /></TableCell>
+                <TableCell><Input className='w-[80px]' /></TableCell>
+                <TableCell><Input className='w-[80px]' /></TableCell></>}
+            </TableRow>)}
           </TableBody>
         </Table>)}
         {variants.length === 0 && (<div className='flex flex-col gap-6'>
