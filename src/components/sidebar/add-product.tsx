@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import Select from 'react-select';
 import { MdOutlineAddPhotoAlternate } from 'react-icons/md';
-import { Trash2 } from 'lucide-react';
+import { Trash2, X } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import Modal from '@/components/modal';
 
 // Data
 import { CategoryOptions, VariantsOptions, ColorOptions, SizeOptions } from '@/utils/data';
@@ -32,6 +33,8 @@ export default function addproduct() {
   const [optionVariant, setOptionVariant] = useState<OptionVariants[]>(VariantsOptions);
   const [optionSelected, setOptionSelected] = useState<OptionSelected[]>([{ option: [] }, { option: [] }]);
   const [variantTable, setVariantTable] = useState<VariantTable[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
 
   const [data, setData] = useState<RequestProduct>({
     productName: '',
@@ -48,7 +51,7 @@ export default function addproduct() {
     if (!files) return;
 
     if (images.length + files.length > 3) {
-      alert('You can only upload up to 3 images.');
+      setIsModalOpen(true);
       return;
     }
 
@@ -63,6 +66,11 @@ export default function addproduct() {
     setImages(DataImages);
     const previewUrls = DataImages.map((file) => URL.createObjectURL(file));
     setPreviews(previewUrls);
+  };
+
+  const handleDeletePhoto = (index: number) => {
+    setPreviews((prev) => prev.filter((_, i) => i !== index));
+    setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleAddVariant = (): void => {
@@ -158,45 +166,40 @@ export default function addproduct() {
     return option;
   }
 
-  // const handleVariantTable = () => {
-
-  // }
-
-  useEffect(() => {
-    console.log('optionsvariants ==>', optionVariant);
-    console.log('variants ==>', variants);
-
-  }, [optionVariant, variants]);
-
   return (
     <div className="p-4">
       <p className="text-4xl font-bold mb-10">Add Your Product</p>
       <div className="flex flex-col gap-6">
-        <div className="flex flex-row justify-between items-center">
-          <Label className="font-bold" htmlFor="product's name">
+        <div className="grid grid-cols-3 items-center">
+          <Label className="font-bold col-span-1" htmlFor="product's name">
             Product's Name <Asterisk />
           </Label>
-          <Input className="w-[900px]" id="product's name" placeholder="Product's Name" />
+          <Input className="col-span-2" id="product's name" placeholder="Product's Name" />
         </div>
-        <div className="flex flex-row justify-between items-center">
-          <Label className="font-bold" htmlFor="Category">
+        <div className="grid grid-cols-3 items-center">
+          <Label className="font-bold col-span-1" htmlFor="Category">
             Category <Asterisk />
           </Label>
-          <Select className="w-[900px]" options={CategoryOptions} />
+          <Select className="col-span-2" options={CategoryOptions} />
         </div>
-        <div className="flex items-start mt-[-15px] flex-row">
+        <div className="grid grid-cols-3">
           <Label className="font-bold mt-5" htmlFor="photoProduct">
             Photo Product <Asterisk />
           </Label>
-          <div className="flex ml-[105px]">
+          <div className="col-span-2">
             <div className="flex gap-2 mt-4">
               {previews.map((src, index) => (
-                <img
-                  className="w-24 h-24 object-cover border rounded-md"
-                  key={index}
-                  src={src}
-                  alt={`Preview ${index + 1}`}
-                />
+                <div className='relative'>
+                  <img
+                    className="w-24 h-24 object-cover border rounded-md"
+                    key={index}
+                    src={src}
+                    alt={`Preview ${index + 1}`}
+                  />
+                  <X className='absolute cursor-pointer top-[-5px] right-[-5px] w-[16px] h-[16px] bg-red-500 rounded-full hover:bg-red-800 text-white p-[2px]'
+                    onClick={() => handleDeletePhoto(index)}
+                  />
+                </div>
               ))}
               <div className="relative">
                 <div className="flex flex-col justify-center items-center gap-3 w-24 h-24 cursor-pointer border border-dashed border-gray-400 rounded-md absolute top-0">
@@ -210,17 +213,28 @@ export default function addproduct() {
                   multiple
                   onChange={handleChangePhoto}
                 />
+                <Modal
+                  className="hidden"
+                  isModalOpen={isModalOpen}
+                  onClick={() => setIsModalOpen(false)}
+                  text={{
+                    title: 'Warning!',
+                    description:
+                      'You can only upload up to 3 images.',
+                    button: 'Send Link',
+                  }}
+                />
               </div>
             </div>
           </div>
         </div>
-        <div className="flex flex-row justify-between">
+        <div className="grid grid-cols-3">
           <Label className="font-bold" htmlFor="Description">
             Description <Asterisk />
           </Label>
-          <Textarea className="w-[900px] h-[200px]" id="Description" placeholder="Description" />
+          <Textarea className="col-span-2 h-[200px]" id="Description" placeholder="Description" />
         </div>
-        {variants.length === 0 && (<div className="flex flex-row justify-between items-center">
+        {variants.length === 0 && (<div className="grid grid-cols-3 items-center">
           <div>
             <Label className="font-bold" htmlFor="variant">
               Product's Variant
@@ -229,14 +243,14 @@ export default function addproduct() {
               Add up to 2 variant types to let customers choose the product that suits them best.
             </p>
           </div>
-          <Button onClick={() => handleAddVariant()} className="w-[200px]"> + Add Variant</Button>
+          <Button onClick={() => handleAddVariant()} className="w-[100px]"> + Add Variant</Button>
         </div>)}
         {variants.length > 0 && (
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col w-full gap-6">
             {variants.map((variant, index) => (
-              <div key={index} className="flex flex-row justify-start items-center gap-6">
-                <div className="flex flex-row gap-6">
-                  <div className='flex flex-row gap-6'>
+              <div key={index} className="flex flex-row w-full justify-start items-center gap-6">
+                <div className="flex flex-row w-full gap-6">
+                  <div className='grid grid-cols-4 gap-6'>
                     <Label className="font-bold self-center" htmlFor={`variant${index}`}>
                       Variant {index + 1} <Asterisk />
                     </Label>
@@ -244,11 +258,11 @@ export default function addproduct() {
                       value={variant.variant ? { value: variant.variant, label: variant.variant, isSelected: true } : { value: '', label: 'Select...' }}
                       name="variant"
                       options={handleOptionVariant()}
-                      className="basic-single w-[400px]"
+                      className="basic-single col-span-3"
                       onChange={(e) => handleChangeVariant(index, e)}
                     />
                   </div>
-                  <div className='flex flex-row gap-6'>
+                  <div className='grid grid-cols-5 gap-6'>
                     <Label className="font-bold self-center" htmlFor={`variant${index}`}>
                       Option {index + 1} <Asterisk />
                     </Label>
@@ -256,16 +270,17 @@ export default function addproduct() {
                       isMulti
                       name="option"
                       options={optionSelected && optionSelected[index].option}
-                      className="basic-multi-select w-[400px]"
+                      className="basic-multi-select col-span-3"
                       onChange={(e) => handleChangeOption(index, Array.from(e))}
                       onFocus={() => handleFocus(index)}
                       isDisabled={!variants[index].variant}
                     />
+                    <Button variant='outline' onClick={() => handleDeleteVariant(index, variant.variant)} className="w-[50px]">
+                      <Trash2 />
+                    </Button>
                   </div>
                 </div>
-                <Button variant='outline' onClick={() => handleDeleteVariant(index, variant.variant)} className="w-[50px]">
-                  <Trash2 />
-                </Button>
+
               </div>
             ))}
             {variants.length < 2 && (
@@ -313,40 +328,40 @@ export default function addproduct() {
           </TableBody>
         </Table>)}
         {variants.length === 0 && (<div className='flex flex-col gap-6'>
-          <div className="flex flex-row justify-between items-center">
+          <div className="grid grid-cols-3 items-center">
             <Label className="font-bold" htmlFor="Price">
               Price <Asterisk />
             </Label>
-            <Input className="w-[900px]" id="Price" placeholder="IDR" />
+            <Input className="col-span-2" id="Price" placeholder="IDR" />
           </div>
-          <div className="flex flex-row justify-between items-center">
+          <div className="grid grid-cols-3 items-center">
             <Label className="font-bold" htmlFor="Quantity">
               Quantity <Asterisk />
             </Label>
-            <Input className="w-[900px]" id="Quantity" placeholder="Quantity" />
+            <Input className="col-span-2" id="Quantity" placeholder="Quantity" />
           </div>
-          <div className="flex flex-row justify-between items-center">
+          <div className="grid grid-cols-3 items-center">
             <Label className="font-bold" htmlFor="SKU">
               SKU <Asterisk />
             </Label>
-            <Input className="w-[900px]" id="SKU" placeholder="SKU" />
+            <Input className="col-span-2" id="SKU" placeholder="SKU" />
           </div>
-          <div className="flex flex-row justify-between items-center">
+          <div className="grid grid-cols-3 items-center">
             <Label className="font-bold" htmlFor="Weight">
               Weight <Asterisk />
             </Label>
-            <Input className="w-[900px]" id="Weight" placeholder="grams" />
+            <Input className="col-span-2" id="Weight" placeholder="Grams" />
           </div>
-          <div className="flex flex-row justify-between items-center">
+          <div className="grid grid-cols-3 items-center">
             <Label className="font-bold" htmlFor="Discount">
               Discount
             </Label>
-            <Input className="w-[900px]" id="Discount" placeholder="IDR" />
+            <Input className="col-span-2" id="Discount" placeholder="IDR" />
           </div>
         </div>)}
       </div>
       <div className="flex justify-end gap-4">
-        <Button className="w-[200px] mt-10">Create Product</Button>
+        <Button className="w-[120px] mt-10">Create Product</Button>
       </div>
     </div>
   );

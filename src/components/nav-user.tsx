@@ -44,6 +44,7 @@ export function NavUser({
   const Router = useRouter()
   const handleLogout = () :void=> {
     localStorage.removeItem("fiCommerce")
+    localStorage.removeItem("persist:root")
     Router.push("/auth/login")
   }
 

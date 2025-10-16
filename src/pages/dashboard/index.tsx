@@ -1,5 +1,9 @@
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
+import { useDispatch } from 'react-redux';
+import { setActiveComponent } from '@/store/slices/sidebarSlice';
+
+// components
 import { AppSidebar } from '@/components/app-sidebar';
 import { ModeToggle } from '@/components/toggle-dark-mode';
 import {
@@ -19,6 +23,7 @@ import Orders from '@/components/sidebar/orders';
 
 export default function Page() {
   const activeComponent = useSelector((state: RootState) => state.sidebar.activeComponent);
+  const dispatch = useDispatch();
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -29,13 +34,32 @@ export default function Page() {
             <Separator orientation="vertical" className="mr-2 h-4" />
             <Breadcrumb>
               <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">Building Your Application</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-                </BreadcrumbItem>
+                {activeComponent === 'home' ? (
+                  <BreadcrumbItem className="hidden md:block cursor-pointer">
+                  <BreadcrumbLink onClick={() => dispatch(setActiveComponent('home'))}>Home</BreadcrumbLink>
+                </BreadcrumbItem>) : (
+                  activeComponent === 'orders' ? (
+                    <BreadcrumbItem className="hidden md:block cursor-pointer">
+                      <BreadcrumbLink onClick={() => dispatch(setActiveComponent('orders'))}>Orders</BreadcrumbLink>
+                    </BreadcrumbItem>
+                  ) : activeComponent === 'addproduct' || activeComponent === 'listproducts' ? (
+                    <BreadcrumbItem className="hidden md:block cursor-pointer">
+                      <BreadcrumbLink onClick={() => dispatch(setActiveComponent('listproducts'))}>Product</BreadcrumbLink>
+                    </BreadcrumbItem>
+                  ) : null
+                )}
+                {activeComponent === 'addproduct' && (
+                  <><BreadcrumbSeparator className="hidden md:block" />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>Add Product</BreadcrumbPage>
+                    </BreadcrumbItem></>
+                )}
+                {activeComponent === 'listproducts' && (
+                  <><BreadcrumbSeparator className="hidden md:block" />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>List Product</BreadcrumbPage>
+                    </BreadcrumbItem></>
+                )}
               </BreadcrumbList>
             </Breadcrumb>
           </div>
