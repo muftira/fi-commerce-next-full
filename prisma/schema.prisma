@@ -9,13 +9,19 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
   // directUrl = env("DIRECT_URL")
 }
 
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
 model Role {
-  id        Int     @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   roleName  String
   users     User[]
   createdAt DateTime @default(now())
@@ -23,19 +29,20 @@ model Role {
 }
 
 model User {
-  id         Int        @id @default(autoincrement())
-  fullName   String
-  email      String     @unique
-  password   String
-  address    String
-  phone      String
-  roleId     Int
-  role       Role       @relation(fields: [roleId], references: [id])
-  isDeleted  Boolean    @default(false)
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  imageUser  ImageUser?
-  resetLink  ResetLink?
+  id        Int        @id @default(autoincrement())
+  fullName  String
+  email     String     @unique
+  password  String
+  address   String
+  phone     String
+  roleId    Int
+  role      Role       @relation(fields: [roleId], references: [id])
+  isDeleted Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  imageUser ImageUser?
+  resetLink ResetLink?
+  product   Product[]
 }
 
 model ImageUser {
@@ -49,14 +56,89 @@ model ImageUser {
 }
 
 model ResetLink {
-  id         Int      @id @default(autoincrement())
-  userId     Int      @unique
-  user       User     @relation(fields: [userId], references: [id])
-  token      String
-  expiredAt  DateTime
-  isUsed     Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  token     String
+  expiredAt DateTime
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
+model Category {
+  id           Int       @id @default(autoincrement())
+  categoryName String
+  isDeleted    Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  product      Product[]
+}
 
+model Product {
+  id           Int            @id @default(autoincrement())
+  userId       Int?            @unique
+  user         User?           @relation(fields: [userId], references: [id])
+  productName  String
+  sku          String
+  numOrders    Int
+  description  String
+  status       ProductStatus  @default(DRAFT)
+  categoryId   Int
+  category     Category       @relation(fields: [categoryId], references: [id])
+  isDeleted    Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  imageProduct ImageProduct[]
+  variant      Variant[]
+  option       Option[]
+}
+
+model ImageProduct {
+  id        Int      @id @default(autoincrement())
+  productId Int      @unique
+  product   Product  @relation(fields: [productId], references: [id])
+  url       String
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Variant {
+  id             Int      @id @default(autoincrement())
+  productId      Int?      @unique
+  product        Product?  @relation(fields: [productId], references: [id])
+  quantity       Int
+  option1        String
+  option2        String
+  price          Int
+  title          String
+  weight         Int
+  discount       Int
+  sku            String
+  compareAtPrice Int
+  isDeleted      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Option {
+  id        Int      @id @default(autoincrement())
+  productId Int?      @unique
+  product   Product?  @relation(fields: [productId], references: [id])
+  name      String
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  value     Value[]
+}
+
+model Value {
+  id        Int      @id @default(autoincrement())
+  optionId  Int      @unique
+  option    Option   @relation(fields: [optionId], references: [id])
+  name      String
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
