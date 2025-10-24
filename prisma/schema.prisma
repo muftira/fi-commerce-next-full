@@ -77,8 +77,8 @@ model Category {
 
 model Product {
   id           Int            @id @default(autoincrement())
-  userId       Int?            @unique
-  user         User?           @relation(fields: [userId], references: [id])
+  userId       Int?           @unique
+  user         User?          @relation(fields: [userId], references: [id])
   productName  String
   sku          String
   numOrders    Int
@@ -95,19 +95,20 @@ model Product {
 }
 
 model ImageProduct {
-  id        Int      @id @default(autoincrement())
-  productId Int      @unique
-  product   Product  @relation(fields: [productId], references: [id])
-  url       String
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           Int      @id @default(autoincrement())
+  productId    Int
+  product      Product  @relation(fields: [productId], references: [id])
+  cloudinaryId String
+  url          String
+  isDeleted    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Variant {
   id             Int      @id @default(autoincrement())
-  productId      Int?      @unique
-  product        Product?  @relation(fields: [productId], references: [id])
+  productId      Int?
+  product        Product? @relation(fields: [productId], references: [id])
   quantity       Int
   option1        String
   option2        String
@@ -124,8 +125,8 @@ model Variant {
 
 model Option {
   id        Int      @id @default(autoincrement())
-  productId Int?      @unique
-  product   Product?  @relation(fields: [productId], references: [id])
+  productId Int?
+  product   Product? @relation(fields: [productId], references: [id])
   name      String
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
@@ -135,7 +136,7 @@ model Option {
 
 model Value {
   id        Int      @id @default(autoincrement())
-  optionId  Int      @unique
+  optionId  Int
   option    Option   @relation(fields: [optionId], references: [id])
   name      String
   isDeleted Boolean  @default(false)

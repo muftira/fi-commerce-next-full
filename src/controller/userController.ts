@@ -17,7 +17,7 @@ export const getAllUsers = async (req: NextApiRequest, res: NextApiResponse) => 
     try {
         const users = await prisma.user.findMany(
         );
-        if (users) {
+        if (!users) {
             throw new errorResponse('User is not found', 401);
         }
         return successResponse(res, users, 'Success', 200);
@@ -33,6 +33,33 @@ export const getUserbyId = async (req: NextApiRequest, res: NextApiResponse) => 
         const user = await prisma.user.findUnique({
             where: {
                 id: Number(id)
+            },
+            include: {
+                imageUser: true,
+                product: {
+                    include: {
+                        category: {
+                            select: {
+                                id: true,
+                                categoryName: true
+                            }
+                        },
+                        imageProduct: true,
+                        variant: true,
+                        option: {
+                            select: {
+                                id: true,
+                                productId: true,
+                                name: true,
+                                value: {
+                                    select: {
+                                        name: true
+                                    }
+                                }
+                            }
+                        },
+                    }
+                }
             }
         });
 
