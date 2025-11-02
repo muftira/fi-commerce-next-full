@@ -128,5 +128,38 @@ export type DetailOptions = {
   isDeleted: boolean;
 }
 
+export type OptionBody = {
+  id?: number; 
+  name: string; 
+  createdAt?: Date; 
+  updatedAt?: Date; 
+  isDeleted?: boolean; 
+  productId?: number | null;
+  value?: ValueBody[]
+}
+
+export type ValueBody = {
+  id?: number; 
+  name: string; 
+  createdAt?: Date; 
+  updatedAt?: Date; 
+  isDeleted?: boolean; 
+  optionId?: number | null;
+}
+
+export type VariantBody = {
+  id?: number;
+  productId?: number;
+  option1?: string;
+  option2?: string;
+  price?: number;
+  quantity?: number;
+  weight?: number;
+  discount?: number;
+  sku?: string;
+  compareAtPrice?: number;
+  isDeleted?: boolean;
+}
+
 
 
