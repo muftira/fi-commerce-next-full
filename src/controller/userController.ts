@@ -37,6 +37,9 @@ export const getUserbyId = async (req: NextApiRequest, res: NextApiResponse) => 
             include: {
                 imageUser: true,
                 product: {
+                    where: {
+                        isDeleted: false
+                    },
                     include: {
                         category: {
                             select: {
@@ -44,15 +47,30 @@ export const getUserbyId = async (req: NextApiRequest, res: NextApiResponse) => 
                                 categoryName: true
                             }
                         },
-                        imageProduct: true,
-                        variant: true,
+                        imageProduct: {
+                            where: {
+                                isDeleted: false
+                            }
+                        },
+                        variant: {
+                            where: {
+                                isDeleted: false
+                            }
+                        },
                         option: {
+                            where: {
+                                isDeleted: false
+                            },
                             select: {
                                 id: true,
                                 productId: true,
                                 name: true,
                                 value: {
+                                    where: {
+                                        isDeleted: false
+                                    },
                                     select: {
+                                        id: true,
                                         name: true
                                     }
                                 }
