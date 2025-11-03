@@ -7,9 +7,11 @@ import { OptionBody, ValueBody, VariantBody } from '@/types';
 
 export const getAllProducts = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const products = await prisma.product.findMany(
-
-        )
+        const products = await prisma.product.findMany({
+            where: {
+                isDeleted: false
+            }
+        })
         if (!products) {
             throw new errorResponse('product is not found', 401);
         }
@@ -171,14 +173,14 @@ export const addProduct = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 export const updateProduct = async (req: NextApiRequest, res: NextApiResponse) => {
-    const { id, categoryId, userId } = req.query;
+    const { id, categoryId } = req.query;
     const { productName, categoryName, options, variants, status, description, sku, deletedImage } = req.body;
     const variantParsed = JSON.parse(variants);
     const optionParsed = JSON.parse(options);
     try {
-        const findProduct = await prisma.product.findUnique({ where: { id: Number(id) } });
-        const findCategory = await prisma.category.findUnique({
-            where: { id: Number(categoryId) },
+        const findProduct = await prisma.product.findFirst({ where: { id: Number(id), isDeleted: false } });
+        const findCategory = await prisma.category.findFirst({
+            where: { id: Number(categoryId), isDeleted: false },
         });
 
         if (!findProduct || !findCategory) {
@@ -353,6 +355,80 @@ export const updateProduct = async (req: NextApiRequest, res: NextApiResponse) =
             }
         });
         return successResponse(res, product, 'Success', 200);
+    } catch (err) {
+        const statusCode = err instanceof errorResponse ? err.statusCode : 500;
+        return ApiError(res, (err as Error).message, statusCode, err)
+    }
+};
+
+export const deleteProduct = async (req: NextApiRequest, res: NextApiResponse) => {
+    const { id, categoryId } = req.query;
+    try {
+        const findImage = await prisma.imageProduct.findMany({ where: { productId: Number(id) } });
+
+        const findProduct = await prisma.product.findFirst({
+            where: {
+                id: Number(id),
+                isDeleted: false
+            }
+        });
+
+        if (!findProduct) {
+            throw new errorResponse('Product not found', 401);
+        }
+
+        if (findImage.length > 0) {
+            await Promise.all(
+                findImage.map((image) => cloudinary.uploader.destroy(image.cloudinaryId))
+            );
+            await prisma.imageProduct.deleteMany({
+                where: { productId: Number(id) },
+            });
+        }
+
+        await prisma.product.update({
+            where: { id: Number(id) },
+            data: { isDeleted: true }
+        });
+
+        await prisma.variant.updateMany({
+            where: { productId: Number(id) },
+            data: { isDeleted: true }
+        })
+        const findOption = await prisma.option.findMany({
+            where: {
+                productId: Number(id),
+                isDeleted: false
+            }
+        })
+
+        await Promise.all(
+            findOption.map((option) => prisma.value.updateMany({
+                where: { optionId: option.id },
+                data: { isDeleted: true }
+            }))
+        )
+
+        await prisma.option.updateMany({
+            where: { productId: Number(id) },
+            data: { isDeleted: true }
+        })
+
+        const findCategory = await prisma.product.findMany({
+            where: {
+                categoryId: Number(categoryId),
+                isDeleted: false
+            }
+        },
+        );
+
+        if (findCategory.length == 0) {
+            await prisma.category.update({
+                where: { id: Number(categoryId) },
+                data: { isDeleted: true }
+            });
+        }
+        return successResponse(res, {}, 'Success', 200);
     } catch (err) {
         const statusCode = err instanceof errorResponse ? err.statusCode : 500;
         return ApiError(res, (err as Error).message, statusCode, err)
