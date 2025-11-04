@@ -22,6 +22,59 @@ export const getAllProducts = async (req: NextApiRequest, res: NextApiResponse) 
     }
 };
 
+export const getAllProductsbyUserId = async (req: NextApiRequest, res: NextApiResponse) => {
+    const { userId } = req.query;
+    try {
+        const products = await prisma.product.findMany({
+            where: {
+                userId: Number(userId),
+                isDeleted: false
+            },
+            include: {
+                category: {
+                    select: {
+                        id: true,
+                        categoryName: true
+                    }
+                },
+                imageProduct: true,
+                variant: {
+                    where: {
+                        isDeleted: false
+                    }
+                },
+                option: {
+                    where: {
+                        isDeleted: false
+                    },
+                    select: {
+                        id: true,
+                        productId: true,
+                        name: true,
+                        value: {
+                            where: {
+                                isDeleted: false
+                            },
+                            select: {
+                                id: true,
+                                name: true
+                            }
+                        }
+                    }
+                },
+            }
+
+        })
+        if (!products) {
+            throw new errorResponse('product is not found', 401);
+        }
+        return successResponse(res, products, 'Success', 200);
+    } catch (err) {
+        const statusCode = err instanceof errorResponse ? err.statusCode : 500;
+        return ApiError(res, (err as Error).message, statusCode, err)
+    }
+};
+
 export const getProductbyId = async (req: NextApiRequest, res: NextApiResponse) => {
     const { id } = req.query;
     try {
