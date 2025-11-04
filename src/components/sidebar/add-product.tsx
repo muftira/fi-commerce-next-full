@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import Asterisk from '@/components/asterisk';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import Select from 'react-select';
+import Select, { SingleValue } from 'react-select';
 import { MdOutlineAddPhotoAlternate } from 'react-icons/md';
 import { Trash2, X } from 'lucide-react';
 import {
@@ -24,7 +24,7 @@ import Modal from '@/components/modal';
 import { CategoryOptions, VariantsOptions, ColorOptions, SizeOptions } from '@/utils/data';
 
 // type
-import { VariantsData, OptionVariants, OptionSelected, RequestProduct, VariantTable } from '@/types';
+import { VariantsData, OptionVariants, OptionSelected, RequestProduct, VariantTable, Variant } from '@/types';
 
 export default function addproduct() {
   const [images, setImages] = useState<File[]>([]);
@@ -34,6 +34,7 @@ export default function addproduct() {
   const [optionSelected, setOptionSelected] = useState<OptionSelected[]>([{ option: [] }, { option: [] }]);
   const [variantTable, setVariantTable] = useState<VariantTable[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [typeModal, setTypeModal] = useState<string>('');
 
 
   const [data, setData] = useState<RequestProduct>({
@@ -42,35 +43,52 @@ export default function addproduct() {
     categoryName: '',
     description: '',
     status: '',
+    sku: '',
     options: [],
     variants: []
   });
 
   const handleChangePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
+    let files = e.target.files;
     if (!files) return;
 
-    if (images.length + files.length > 3) {
-      setIsModalOpen(true);
-      return;
-    }
+    Array.from(files).forEach((file: File) => {
+      if (file.type !== 'image/jpeg' && file.type !== 'image/png' && file.type !== 'image/jpg') {
+        setTypeModal('notImage');
+        setIsModalOpen(true);
+        files = null;
+        return;
+      }
+    });
 
-    const selectedFiles = Array.from(files).slice(0, 3);
-    setImages(selectedFiles);
-    let DataImages = [...images];
-    if (selectedFiles.length > 0) {
-      selectedFiles.forEach((file) => {
-        DataImages.push(file);
-      });
+
+    if (files !== null) {
+      if (images.length + files.length > 3) {
+        setTypeModal('maxImage');
+        setIsModalOpen(true);
+        return;
+      }
+
+      const selectedFiles = Array.from(files).slice(0, 3);
+      setImages(selectedFiles);
+      let DataImages = [...images];
+      if (selectedFiles.length > 0) {
+        selectedFiles.forEach((file) => {
+          DataImages.push(file);
+        });
+      }
+      setImages(DataImages);
+      const previewUrls = DataImages.map((file) => URL.createObjectURL(file));
+      setPreviews(previewUrls);
+      setData((prev) => ({ ...prev, imageProduct: DataImages }));
     }
-    setImages(DataImages);
-    const previewUrls = DataImages.map((file) => URL.createObjectURL(file));
-    setPreviews(previewUrls);
   };
 
   const handleDeletePhoto = (index: number) => {
+    const _images = images.filter((_, i) => i !== index);
     setPreviews((prev) => prev.filter((_, i) => i !== index));
-    setImages((prev) => prev.filter((_, i) => i !== index));
+    setImages(_images);
+    setData((prev) => ({ ...prev, imageProduct: _images }));
   };
 
   const handleAddVariant = (): void => {
@@ -129,8 +147,6 @@ export default function addproduct() {
     newVariant[index] = { ...newVariant[index], variant: e.value };
     setVariants(newVariant);
     setOptionVariant(data);
-
-    // const dataVariantTable = [...variantTable];
   }
 
   const handleFocus = (index: number) => {
@@ -165,6 +181,44 @@ export default function addproduct() {
     })
     return option;
   }
+  const handleChangeNoVariants = (e: React.ChangeEvent<HTMLInputElement>, value: string) => {
+    const variantData = { option1: '', option2: '', price: 0, quantity: 0, weight: 0, discount: 0, sku: '' };
+    switch (value) {
+      case 'price':
+        const price: Variant[] = [{ ...variantData, price: Number(e.target.value) }];
+        setData((prev) => ({ ...prev, variants: price }));
+        break;
+
+      case 'quantity':
+        const quantity: Variant[] = [{ ...variantData, quantity: Number(e.target.value) }];
+        setData((prev) => ({ ...prev, variants: quantity }));
+        break;
+
+      case 'weight':
+        const weight: Variant[] = [{ ...variantData, weight: Number(e.target.value) }];
+        setData((prev) => ({ ...prev, weivariantsht: weight }));
+        break;
+
+      case 'discount':
+        const discount: Variant[] = [{ ...variantData, discount: Number(e.target.value) }];
+        setData((prev) => ({ ...prev, variants: discount }));
+        break;
+
+      case 'sku':
+        const sku: Variant[] = [{ ...variantData, sku: e.target.value }];
+        setData((prev) => ({ ...prev, variants: sku, sku: e.target.value }));
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  useEffect(() => {
+    if (variants.length === 0) {
+      setData(prevData => ({ ...prevData, variants: [{ option1: '', option2: '', price: 0, quantity: 0, weight: 0, discount: 0, sku: '' }] }))
+    }
+  }, [variants])
 
   return (
     <div className="p-4">
@@ -174,13 +228,17 @@ export default function addproduct() {
           <Label className="font-bold col-span-1" htmlFor="product's name">
             Product's Name <Asterisk />
           </Label>
-          <Input className="col-span-2" id="product's name" placeholder="Product's Name" />
+          <Input className="col-span-2" onChange={(e) => setData(prevData => ({ ...prevData, productName: e.target.value }))} id="product's name" placeholder="Product's Name" />
         </div>
         <div className="grid grid-cols-3 items-center">
           <Label className="font-bold col-span-1" htmlFor="Category">
             Category <Asterisk />
           </Label>
-          <Select className="col-span-2" options={CategoryOptions} />
+          <Select className="col-span-2" options={CategoryOptions} onChange={(e) => {
+            if (e?.value) {
+              setData(prevData => ({ ...prevData, categoryName: e.value }))
+            }
+          }} />
         </div>
         <div className="grid grid-cols-3">
           <Label className="font-bold mt-5" htmlFor="photoProduct">
@@ -217,11 +275,8 @@ export default function addproduct() {
                   className="hidden"
                   isModalOpen={isModalOpen}
                   onClick={() => setIsModalOpen(false)}
-                  text={{
-                    title: 'Warning!',
-                    description:
-                      'You can only upload up to 3 images.',
-                    button: 'Send Link',
+                  text={typeModal == 'notImage' ? { title: 'Warning!', description: 'Only JPEG, JPG and PNG images are allowed', button: '' } : {
+                    title: 'Warning!', description: 'You can only upload up to 3 images.', button: '',
                   }}
                 />
               </div>
@@ -232,7 +287,7 @@ export default function addproduct() {
           <Label className="font-bold" htmlFor="Description">
             Description <Asterisk />
           </Label>
-          <Textarea className="col-span-2 h-[200px]" id="Description" placeholder="Description" />
+          <Textarea className="col-span-2 h-[200px]" onChange={(e) => setData(prevData => ({ ...prevData, description: e.target.value }))} id="Description" placeholder="Description" />
         </div>
         {variants.length === 0 && (<div className="grid grid-cols-3 items-center">
           <div>
@@ -310,7 +365,7 @@ export default function addproduct() {
           <TableBody>
             {variants[0].option?.map((opt1, index) => <TableRow key={index}>
               {variants[0] && <TableCell>{opt1}</TableCell>}
-              {variants[1] && variants[1].variant ? variants[1].option.map(opt2 => <TableRow className='grid grid-cols-6'>
+              {variants[1] && variants[1].variant ? variants[1].option.map((opt2, idx) => <TableRow className='grid grid-cols-6'>
                 <TableCell className='self-center'>{opt2 || ''}</TableCell>
                 <TableCell><Input className='w-[80px]' /></TableCell>
                 <TableCell><Input className='w-[80px]' /></TableCell>
@@ -332,31 +387,31 @@ export default function addproduct() {
             <Label className="font-bold" htmlFor="Price">
               Price <Asterisk />
             </Label>
-            <Input className="col-span-2" id="Price" placeholder="IDR" />
+            <Input className="col-span-2" onChange={(e) => handleChangeNoVariants(e, 'price')} id="Price" placeholder="IDR" />
           </div>
           <div className="grid grid-cols-3 items-center">
             <Label className="font-bold" htmlFor="Quantity">
               Quantity <Asterisk />
             </Label>
-            <Input className="col-span-2" id="Quantity" placeholder="Quantity" />
+            <Input className="col-span-2" onChange={(e) => handleChangeNoVariants(e, 'quantity')} id="Quantity" placeholder="Quantity" />
           </div>
           <div className="grid grid-cols-3 items-center">
             <Label className="font-bold" htmlFor="SKU">
               SKU <Asterisk />
             </Label>
-            <Input className="col-span-2" id="SKU" placeholder="SKU" />
+            <Input className="col-span-2" onChange={(e) => handleChangeNoVariants(e, 'sku')} id="SKU" placeholder="SKU" />
           </div>
           <div className="grid grid-cols-3 items-center">
             <Label className="font-bold" htmlFor="Weight">
               Weight <Asterisk />
             </Label>
-            <Input className="col-span-2" id="Weight" placeholder="Grams" />
+            <Input className="col-span-2" onChange={(e) => handleChangeNoVariants(e, 'weight')} id="Weight" placeholder="Grams" />
           </div>
           <div className="grid grid-cols-3 items-center">
             <Label className="font-bold" htmlFor="Discount">
               Discount
             </Label>
-            <Input className="col-span-2" id="Discount" placeholder="IDR" />
+            <Input className="col-span-2" onChange={(e) => handleChangeNoVariants(e, 'discount')} id="Discount" placeholder="IDR" />
           </div>
         </div>)}
       </div>

@@ -83,10 +83,11 @@ export type OptionSelected = {
 
 export type RequestProduct = {
   productName: string,
-  imageProduct: File | null,
+  imageProduct: File[] | null,
   categoryName: string,
   description: string,
   status: string,
+  sku: string,
   options: Option[],
   variants: Variant[]
 }
@@ -109,7 +110,7 @@ export type Variant = {
   quantity: number,
   weight: number,
   discount: number,
-  isDeleted: boolean
+  isDeleted?: boolean
   sku: string
 }
 
