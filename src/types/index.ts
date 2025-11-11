@@ -93,25 +93,28 @@ export type RequestProduct = {
 }
 
 export type Option = {
+  id?: number;
   name: string;
-  isDeleted: boolean;
-  value: Value[]
+  isDeleted?: boolean;
+  value: Value[] | []
 }
 export type Value = {
+  id?: number;
   name: string;
-  value: number;
-  isDeleted: boolean;
+  value?: number;
+  isDeleted?: boolean;
 }
 
 export type Variant = {
-  option1: string,
-  option2: string,
+  id?: number,
+  option1: string | undefined,
+  option2: string | undefined,
   price: number,
   quantity: number,
   weight: number,
   discount: number,
   isDeleted?: boolean
-  sku: string
+  sku: string;
 }
 
 export type VariantTable = {
