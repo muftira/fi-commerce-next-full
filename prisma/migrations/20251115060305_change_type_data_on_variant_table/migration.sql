@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Variant" ALTER COLUMN "weight" SET DATA TYPE TEXT,
+ALTER COLUMN "discount" SET DEFAULT 0;

@@ -72,7 +72,7 @@ export type VariantsData = {
 }
 
 export type OptionVariants = {
-  value: string;
+  value: string
   label: string;
   isSelected?: boolean;
 }
@@ -111,25 +111,10 @@ export type Variant = {
   option2: string | undefined,
   price: number,
   quantity: number,
-  weight: number,
+  weight: String,
   discount: number,
   isDeleted?: boolean
   sku: string;
-}
-
-export type VariantTable = {
-  Variant: string;
-  detailVariant: DetailOptions[];
-}
-
-export type DetailOptions = {
-  name: string;
-  price: number;
-  quantity: number;
-  weight: number;
-  discount: number;
-  sku: string;
-  isDeleted: boolean;
 }
 
 export type OptionBody = {

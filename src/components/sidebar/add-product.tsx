@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // component
 import { Input } from '@/components/ui/input';
@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import Asterisk from '@/components/asterisk';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import Select, { SingleValue } from 'react-select';
+import Select from 'react-select';
 import { MdOutlineAddPhotoAlternate } from 'react-icons/md';
 import { Trash2, X } from 'lucide-react';
 import {
@@ -29,9 +29,7 @@ import {
   OptionVariants,
   OptionSelected,
   RequestProduct,
-  VariantTable,
   Variant,
-  Option,
   Value,
 } from '@/types';
 
@@ -44,7 +42,6 @@ export default function addproduct() {
     { option: [] },
     { option: [] },
   ]);
-  const [variantTable, setVariantTable] = useState<VariantTable[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [typeModal, setTypeModal] = useState<string>('');
 
@@ -53,7 +50,7 @@ export default function addproduct() {
     imageProduct: null,
     categoryName: '',
     description: '',
-    status: '',
+    status: 'DRAFT',
     sku: '',
     options: [],
     variants: [],
@@ -106,24 +103,22 @@ export default function addproduct() {
       return;
     }
     const dataVariant = [...variants, { variant: '', option: [] }];
+    const newVariant = {
+      option1: '',
+      option2: '',
+      price: 0,
+      quantity: 0,
+      weight: '',
+      discount: 0,
+      sku: '',
+    };
+
     setVariants(dataVariant);
-    // const dataVariantTable = {
-    //   option1: '',
-    //   option2: '',
-    //   price: 0,
-    //   quantity: 0,
-    //   weight: 0,
-    //   discount: 0,
-    //   sku: '',
-    // };
-    // const dataOptionTable = { name: '', value: [] };
-    // setData((prev) => ({
-    //   ...prev,
-    //   options: [...prev.options, dataOptionTable],
-    //   variants: [...prev.variants, dataVariantTable],
-    // }));
-    // const dataVariantTable = [...variantTable, { Variant: '', detailVariant: [{ name: '', price: 0, quantity: 0, weight: 0, discount: 0, sku: '', isDeleted: false }] }]
-    // setVariantTable(dataVariantTable);
+    setData((prev) => ({
+      ...prev,
+      variants: [newVariant],
+      sku: '',
+    }));
   };
 
   const handleDeleteVariant = (index: number, value: string, option: String[]): void => {
@@ -139,16 +134,30 @@ export default function addproduct() {
 
     const updatedVariants = variants.filter((variant, i) => variant.variant !== value);
     const updatedOptionsTable = data.options.filter((_, i) => i !== index);
-    const updatedVariantsTable = data.variants.filter((item) => {
-      return !option.includes(item.option1 ?? '');
-    });
+    const variantData: Variant[] = []
+    const updatedVariantsTable = updatedOptionsTable.forEach((item) => {
+      item.value.forEach((value) => {
+        const variant = {
+          option1: value.name,
+          option2: '',
+          price: 0,
+          quantity: 0,
+          weight: '',
+          discount: 0,
+          sku: '',
+        };
+
+        variantData.push(variant)
+      })
+    })
     setOptionVariant(updatedOptionVariant);
     setVariants(updatedVariants);
     setData((prev) => ({
       ...prev,
       options: updatedOptionsTable,
-      variants: updatedVariantsTable,
+      variants: variantData,
     }));
+
   };
 
   const handleChangeVariant = (index: number, e: OptionVariants | null): void => {
@@ -209,59 +218,42 @@ export default function addproduct() {
     newOption[index] = { ...newOption[index], option: newOptions };
     setVariants(newOption);
 
-    let dataVariantTable: Variant[] = [];
-    let dataValueTable: Value[] = [];
-    if (index === 0) {
-      e.map((value: { value: string }) => {
-        const VariantTable = {
-          option1: value.value,
-          option2: '',
+    const dataVariant: Variant[] = []
+    const dataValue: Value[] = []
+    const valueOptions = variants.find((item: VariantsData, i: number) => index === 0 ? item.variant === 'Size' : item.variant === 'Color') || { option: [''] };
+
+    valueOptions?.option.forEach((item: string) => {
+      e.forEach((data: OptionVariants) => {
+
+        const variant = {
+          option1: index === 0 ? data.value : item,
+          option2: index === 1 ? data.value : item,
           price: 0,
           quantity: 0,
-          weight: 0,
+          weight: '',
           discount: 0,
           sku: '',
-        };
-        const _dataValue = {
-          name: value.value,
-        };
+        }
+        dataVariant.push(variant)
+      })
+    })
 
-        dataValueTable.push(_dataValue);
-        dataVariantTable.push(VariantTable);
-      });
+    e.forEach((data: OptionVariants) => {
+      const value = {
+        name: data.value,
+      }
+      dataValue.push(value)
+    })
 
-      setData((prev) => {
-        const newOptions = [...prev.options];
-        newOptions[index] = {
-          ...prev.options[index],
-          value: dataValueTable,
-        };
-        return { ...prev, options: newOptions, variants: dataVariantTable };
-      });
-      
-    }
-    console.log('value ==> ',e);
-    let dataVariantTable2: Variant[] = [];
-    data.variants.map((opt: Variant, i: number) => {
-      e.map((option: { value: string }, j: number) => {
-        const VariantTable = {
-          option1: opt.option1,
-          option2: option.value,
-          price: 0,
-          quantity: 0,
-          weight: 0,
-          discount: 0,
-          sku: '',
-        };
-        dataVariantTable2.push(VariantTable);
-      });
+    setData((prev) => {
+      const newOptions = [...prev.options];
+      newOptions[index] = {
+        ...prev.options[index],
+        value: dataValue,
+      };
+      return { ...prev, options: newOptions, variants: dataVariant };
     });
-    console.log('dataVariantTable2 ==> ',dataVariantTable2);
 
-    // setData((prev) => ({
-    //   ...prev,
-    //   variants: dataVariantTable2,
-    // }))
   };
 
   const handleOptionVariant = () => {
@@ -276,40 +268,63 @@ export default function addproduct() {
       });
     return option;
   };
+
   const handleChangeNoVariants = (e: React.ChangeEvent<HTMLInputElement>, value: string) => {
-    const variantData = {
-      option1: '',
-      option2: '',
-      price: 0,
-      quantity: 0,
-      weight: 0,
-      discount: 0,
-      sku: '',
-    };
     switch (value) {
       case 'price':
-        const price: Variant[] = [{ ...variantData, price: Number(e.target.value) }];
-        setData((prev) => ({ ...prev, variants: price }));
+        setData((prev) => {
+          const newVariant = [...prev.variants]
+          newVariant[0] = { ...newVariant[0], price: Number(e.target.value), option1: '', option2: '' }
+          return {
+            ...prev,
+            variants: newVariant,
+          };
+        });
         break;
 
       case 'quantity':
-        const quantity: Variant[] = [{ ...variantData, quantity: Number(e.target.value) }];
-        setData((prev) => ({ ...prev, variants: quantity }));
+        setData((prev) => {
+          const newVariant = [...prev.variants]
+          newVariant[0] = { ...newVariant[0], quantity: Number(e.target.value), option1: '', option2: '' }
+          return {
+            ...prev,
+            variants: newVariant,
+          };
+        });
         break;
 
       case 'weight':
-        const weight: Variant[] = [{ ...variantData, weight: Number(e.target.value) }];
-        setData((prev) => ({ ...prev, weivariantsht: weight }));
+        setData((prev) => {
+          const newVariant = [...prev.variants]
+          newVariant[0] = { ...newVariant[0], weight: e.target.value, option1: '', option2: '' }
+          return {
+            ...prev,
+            variants: newVariant,
+          };
+        });
         break;
 
       case 'discount':
-        const discount: Variant[] = [{ ...variantData, discount: Number(e.target.value) }];
-        setData((prev) => ({ ...prev, variants: discount }));
+        setData((prev) => {
+          const newVariant = [...prev.variants]
+          newVariant[0] = { ...newVariant[0], discount: Number(e.target.value), option1: '', option2: '' }
+          return {
+            ...prev,
+            variants: newVariant,
+          };
+        });
         break;
 
       case 'sku':
-        const sku: Variant[] = [{ ...variantData, sku: e.target.value }];
-        setData((prev) => ({ ...prev, variants: sku, sku: e.target.value }));
+        setData((prev) => {
+          const newVariant = [...prev.variants]
+          newVariant[0] = { ...newVariant[0], sku: e.target.value, option1: '', option2: '' }
+          return {
+            ...prev,
+            variants: newVariant,
+            sku: e.target.value
+          };
+        });
         break;
 
       default:
@@ -318,14 +333,8 @@ export default function addproduct() {
   };
 
   useEffect(() => {
-    // if (variants.length === 0) {
-    //   setData((prevData) => ({
-    //     ...prevData,
-    //     variants: [],
-    //   }));
-    // }
     console.log('data==> ', data);
-  }, [variants, data]);
+  }, [data]);
 
   return (
     <div className="p-4">
@@ -336,6 +345,7 @@ export default function addproduct() {
             Product's Name <Asterisk />
           </Label>
           <Input
+            value={data.productName}
             className="col-span-2"
             onChange={(e) => setData((prevData) => ({ ...prevData, productName: e.target.value }))}
             id="product's name"
@@ -347,6 +357,7 @@ export default function addproduct() {
             Category <Asterisk />
           </Label>
           <Select
+            value={data.categoryName ? { value: data.categoryName, label: data.categoryName } : null}
             className="col-span-2"
             options={CategoryOptions}
             onChange={(e) => {
@@ -395,15 +406,15 @@ export default function addproduct() {
                   text={
                     typeModal == 'notImage'
                       ? {
-                          title: 'Warning!',
-                          description: 'Only JPEG, JPG and PNG images are allowed',
-                          button: '',
-                        }
+                        title: 'Warning!',
+                        description: 'Only JPEG, JPG and PNG images are allowed',
+                        button: '',
+                      }
                       : {
-                          title: 'Warning!',
-                          description: 'You can only upload up to 3 images.',
-                          button: '',
-                        }
+                        title: 'Warning!',
+                        description: 'You can only upload up to 3 images.',
+                        button: '',
+                      }
                   }
                 />
               </div>
@@ -415,6 +426,7 @@ export default function addproduct() {
             Description <Asterisk />
           </Label>
           <Textarea
+            value={data.description}
             className="col-span-2 h-[200px]"
             onChange={(e) => setData((prevData) => ({ ...prevData, description: e.target.value }))}
             id="Description"
@@ -465,6 +477,7 @@ export default function addproduct() {
                     <Select
                       isMulti
                       name="option"
+                      value={data.options[index]?.value.map((item) => ({ value: item.name, label: item.name }))}
                       options={optionSelected && optionSelected[index].option}
                       className="basic-multi-select col-span-3"
                       onChange={(e) => handleChangeOption(index, Array.from(e))}
@@ -531,25 +544,25 @@ export default function addproduct() {
                   {variants[0] && <TableCell>{opt1}</TableCell>}
                   {variants[1] && variants[1].variant
                     ? variants[1].option.map((opt2, idx) => (
-                        <TableRow className="grid grid-cols-6">
-                          <TableCell className="self-center">{opt2 || ''}</TableCell>
-                          <TableCell>
-                            <Input className="w-[80px]" />
-                          </TableCell>
-                          <TableCell>
-                            <Input className="w-[80px]" />
-                          </TableCell>
-                          <TableCell>
-                            <Input className="w-[80px]" />
-                          </TableCell>
-                          <TableCell>
-                            <Input className="w-[80px]" />
-                          </TableCell>
-                          <TableCell>
-                            <Input className="w-[80px]" />
-                          </TableCell>
-                        </TableRow>
-                      ))
+                      <TableRow className="grid grid-cols-6">
+                        <TableCell className="self-center">{opt2 || ''}</TableCell>
+                        <TableCell>
+                          <Input className="w-[80px]" />
+                        </TableCell>
+                        <TableCell>
+                          <Input className="w-[80px]" />
+                        </TableCell>
+                        <TableCell>
+                          <Input className="w-[80px]" />
+                        </TableCell>
+                        <TableCell>
+                          <Input className="w-[80px]" />
+                        </TableCell>
+                        <TableCell>
+                          <Input className="w-[80px]" />
+                        </TableCell>
+                      </TableRow>
+                    ))
                     : variants[1] && <TableCell></TableCell>}
                   {!variants[1] && (
                     <>
@@ -582,6 +595,8 @@ export default function addproduct() {
                 Price <Asterisk />
               </Label>
               <Input
+                value={data.options.length === 0 ? data.variants[0]?.price : ''}
+                type='number'
                 className="col-span-2"
                 onChange={(e) => handleChangeNoVariants(e, 'price')}
                 id="Price"
@@ -593,6 +608,8 @@ export default function addproduct() {
                 Quantity <Asterisk />
               </Label>
               <Input
+                value={data.options.length === 0 ? data.variants[0]?.quantity : ''}
+                type='number'
                 className="col-span-2"
                 onChange={(e) => handleChangeNoVariants(e, 'quantity')}
                 id="Quantity"
@@ -604,6 +621,7 @@ export default function addproduct() {
                 SKU <Asterisk />
               </Label>
               <Input
+                value={data.options.length === 0 ? data.variants[0]?.sku : ''}
                 className="col-span-2"
                 onChange={(e) => handleChangeNoVariants(e, 'sku')}
                 id="SKU"
@@ -615,6 +633,8 @@ export default function addproduct() {
                 Weight <Asterisk />
               </Label>
               <Input
+                value={data.options.length === 0 ? (data.variants[0]?.weight ?? '').toString() : ''}
+                type='number'
                 className="col-span-2"
                 onChange={(e) => handleChangeNoVariants(e, 'weight')}
                 id="Weight"
@@ -626,6 +646,8 @@ export default function addproduct() {
                 Discount
               </Label>
               <Input
+                value={data.options.length === 0 ? data.variants[0]?.discount : ''}
+                type='number'
                 className="col-span-2"
                 onChange={(e) => handleChangeNoVariants(e, 'discount')}
                 id="Discount"

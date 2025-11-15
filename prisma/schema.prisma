@@ -114,8 +114,8 @@ model Variant {
   option2        String
   price          Int
   title          String
-  weight         Int
-  discount       Int
+  weight         String
+  discount       Int      @default(0)
   sku            String
   compareAtPrice Int
   isDeleted      Boolean  @default(false)
