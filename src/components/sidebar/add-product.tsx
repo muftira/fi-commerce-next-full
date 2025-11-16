@@ -56,6 +56,9 @@ export default function addproduct() {
     variants: [],
   });
 
+  let lastColor: string | null | undefined = null;
+
+
   const handleChangePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     let files = e.target.files;
     if (!files) return;
@@ -116,7 +119,7 @@ export default function addproduct() {
     setVariants(dataVariant);
     setData((prev) => ({
       ...prev,
-      variants: [newVariant],
+      variants: data.options.length === 0 ? [newVariant] : [...prev.variants],
       sku: '',
     }));
   };
@@ -219,6 +222,9 @@ export default function addproduct() {
     setVariants(newOption);
 
     const dataVariant: Variant[] = []
+
+
+
     const dataValue: Value[] = []
     const valueOptions = variants.find((item: VariantsData, i: number) => index === 0 ? item.variant === 'Size' : item.variant === 'Color') || { option: [''] };
 
@@ -245,13 +251,39 @@ export default function addproduct() {
       dataValue.push(value)
     })
 
+    const colorOrder = variants && variants[0]?.option;
+    const sizeOrder = variants && variants[1]?.option;
+    const sortingVariant = dataVariant.sort((a: Variant, b: Variant) => {
+      // --- 1. Perbandingan Tingkat Pertama (option1 / Color) ---
+      // Logika ini akan mengelompokkan semua 'Red' bersama, dan semua 'Blue' bersama.
+      if ((a.option1 || '') < (b.option1 || '')) {
+        return -1; // a (misalnya 'Blue') datang sebelum b ('Red')
+      }
+      if ((a.option1 || '') > (b.option1 || '')) {
+        return 1;  // a ('Red') datang setelah b ('Blue')
+      }
+
+      // --- 2. Perbandingan Tingkat Kedua (option2 / Size) ---
+      // Jika sampai di sini, berarti option1A === option1B (Warna sama).
+      // Sekarang kita sort berdasarkan Size (option2).
+      if ((a.option2 || '') < (b.option2 || '')) {
+        return -1;
+      }
+      if ((a.option2 || '') > (b.option2 || '')) {
+        return 1;
+      }
+
+      // 3. Jika kedua tingkatan sama
+      return 0;
+    });
+
     setData((prev) => {
       const newOptions = [...prev.options];
       newOptions[index] = {
         ...prev.options[index],
         value: dataValue,
       };
-      return { ...prev, options: newOptions, variants: dataVariant };
+      return { ...prev, options: newOptions, variants: sortingVariant };
     });
 
   };
@@ -269,72 +301,30 @@ export default function addproduct() {
     return option;
   };
 
-  const handleChangeNoVariants = (e: React.ChangeEvent<HTMLInputElement>, value: string) => {
-    switch (value) {
-      case 'price':
-        setData((prev) => {
-          const newVariant = [...prev.variants]
-          newVariant[0] = { ...newVariant[0], price: Number(e.target.value), option1: '', option2: '' }
-          return {
-            ...prev,
-            variants: newVariant,
-          };
-        });
-        break;
-
-      case 'quantity':
-        setData((prev) => {
-          const newVariant = [...prev.variants]
-          newVariant[0] = { ...newVariant[0], quantity: Number(e.target.value), option1: '', option2: '' }
-          return {
-            ...prev,
-            variants: newVariant,
-          };
-        });
-        break;
-
-      case 'weight':
-        setData((prev) => {
-          const newVariant = [...prev.variants]
-          newVariant[0] = { ...newVariant[0], weight: e.target.value, option1: '', option2: '' }
-          return {
-            ...prev,
-            variants: newVariant,
-          };
-        });
-        break;
-
-      case 'discount':
-        setData((prev) => {
-          const newVariant = [...prev.variants]
-          newVariant[0] = { ...newVariant[0], discount: Number(e.target.value), option1: '', option2: '' }
-          return {
-            ...prev,
-            variants: newVariant,
-          };
-        });
-        break;
-
-      case 'sku':
-        setData((prev) => {
-          const newVariant = [...prev.variants]
-          newVariant[0] = { ...newVariant[0], sku: e.target.value, option1: '', option2: '' }
-          return {
-            ...prev,
-            variants: newVariant,
-            sku: e.target.value
-          };
-        });
-        break;
-
-      default:
-        break;
-    }
+  const handleChangeNoVariants = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
+    setData((prev) => {
+      const newVariant = [...prev.variants]
+      newVariant[0] = { ...newVariant[0], [field]: e.target.value, option1: '', option2: '' }
+      return {
+        ...prev,
+        variants: newVariant,
+        sku: field === 'sku' ? e.target.value : prev.sku,
+      };
+    });
   };
+
+  const handleInputChange = (index: number, field: String, e: React.ChangeEvent<HTMLInputElement>) => {
+    setData(prev => {
+      const newVariants = [...prev.variants];
+      newVariants[index] = { ...newVariants[index], [field as string]: e.target.value };
+      return { ...prev, variants: newVariants };
+    })
+  }
 
   useEffect(() => {
     console.log('data==> ', data);
-  }, [data]);
+    console.log('variants==> ', variants);
+  }, [data, variants]);
 
   return (
     <div className="p-4">
@@ -512,79 +502,87 @@ export default function addproduct() {
             {variants[0].option?.length == 0 && (
               <TableCaption>A list of your recent Variants.</TableCaption>
             )}
+            {/* Header Tabel */}
             <TableHeader>
               <TableRow>
-                {variants[0] && <TableHead>{variants[0].variant || 'Variant 1'}</TableHead>}
-                {variants[1] && (
-                  <TableRow className="grid grid-cols-6">
-                    <TableHead className="translate-y-3.5">
-                      {variants[1].variant || 'Variant 2'}
+                <>
+                  <TableHead>
+                    {data?.options[0]?.name || 'Variant 1'}
+                  </TableHead>
+                  {variants[1] && (
+                    <TableHead>
+                      {data?.options[1]?.name || 'Variant 2'}
                     </TableHead>
-                    <TableHead className="translate-y-3.5">Price (IDR)</TableHead>
-                    <TableHead className="translate-y-3.5">Quantity</TableHead>
-                    <TableHead className="translate-y-3.5">Weight (gram)</TableHead>
-                    <TableHead className="translate-y-3.5">Discount</TableHead>
-                    <TableHead className="translate-y-3.5">SKU</TableHead>
-                  </TableRow>
-                )}
-                {!variants[1] && (
-                  <>
-                    <TableHead>Price (IDR)</TableHead>
-                    <TableHead>Quantity</TableHead>
-                    <TableHead>Weight (gram)</TableHead>
-                    <TableHead>Discount</TableHead>
-                    <TableHead>SKU</TableHead>
-                  </>
-                )}
+                  )}
+                  <TableHead>Price (IDR)</TableHead>
+                  <TableHead>Quantity</TableHead>
+                  <TableHead>Weight (gram)</TableHead>
+                  <TableHead>Discount</TableHead>
+                  <TableHead>SKU</TableHead>
+                </>
               </TableRow>
             </TableHeader>
+
             <TableBody>
-              {variants[0].option?.map((opt1, index) => (
-                <TableRow key={index}>
-                  {variants[0] && <TableCell>{opt1}</TableCell>}
-                  {variants[1] && variants[1].variant
-                    ? variants[1].option.map((opt2, idx) => (
-                      <TableRow className="grid grid-cols-6">
-                        <TableCell className="self-center">{opt2 || ''}</TableCell>
-                        <TableCell>
-                          <Input className="w-[80px]" />
-                        </TableCell>
-                        <TableCell>
-                          <Input className="w-[80px]" />
-                        </TableCell>
-                        <TableCell>
-                          <Input className="w-[80px]" />
-                        </TableCell>
-                        <TableCell>
-                          <Input className="w-[80px]" />
-                        </TableCell>
-                        <TableCell>
-                          <Input className="w-[80px]" />
-                        </TableCell>
-                      </TableRow>
-                    ))
-                    : variants[1] && <TableCell></TableCell>}
-                  {!variants[1] && (
-                    <>
-                      <TableCell>
-                        <Input className="w-[80px]" />
+              {data.variants.map((variant, index) => {
+
+                const isNewColorGroup = variant.option1 !== lastColor;
+
+                let rowSpan = 0
+
+                if (isNewColorGroup) {
+                  rowSpan = data.variants.filter(v => v.option1 === variant.option1).length;
+                  lastColor = variant.option1;
+                }
+
+                return (
+                  <TableRow key={index}>
+                    {isNewColorGroup && (
+                      <TableCell rowSpan={rowSpan}>
+                        {variant.option1}
                       </TableCell>
-                      <TableCell>
-                        <Input className="w-[80px]" />
-                      </TableCell>
-                      <TableCell>
-                        <Input className="w-[80px]" />
-                      </TableCell>
-                      <TableCell>
-                        <Input className="w-[80px]" />
-                      </TableCell>
-                      <TableCell>
-                        <Input className="w-[80px]" />
-                      </TableCell>
-                    </>
-                  )}
-                </TableRow>
-              ))}
+                    )}
+                    {variants[1] && (
+                      <TableCell>{variant.option2}</TableCell>
+                    )}
+                    <TableCell>
+                      <Input className="w-[80px]"
+                        type="number"
+                        value={variant.price || 0}
+                        onChange={(e) => handleInputChange(index, 'price', e)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Input className="w-[80px]"
+                        type="number"
+                        value={variant.quantity || 0}
+                        onChange={(e) => handleInputChange(index, 'quantity', e)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Input className="w-[80px]"
+                        type="number"
+                        value={variant.weight.toString() || ''}
+                        onChange={(e) => handleInputChange(index, 'weight', e)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Input className="w-[80px]"
+                        type="number"
+                        value={variant.discount || ''}
+                        onChange={(e) => handleInputChange(index, 'discount', e)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Input className="w-[80px]"
+                        type="text"
+                        value={variant.sku || ''}
+                        onChange={(e) => handleInputChange(index, 'sku', e)}
+                      />
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         )}
