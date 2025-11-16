@@ -265,7 +265,7 @@ export default function addproduct() {
 
       // --- 2. Perbandingan Tingkat Kedua (option2 / Size) ---
       // Jika sampai di sini, berarti option1A === option1B (Warna sama).
-      // Sekarang kita sort berdasarkan Size (option2).
+      // Sekarang disort berdasarkan Size (option2).
       if ((a.option2 || '') < (b.option2 || '')) {
         return -1;
       }
