@@ -58,7 +58,6 @@ export default function addproduct() {
 
   let lastColor: string | null | undefined = null;
 
-
   const handleChangePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     let files = e.target.files;
     if (!files) return;
@@ -124,7 +123,11 @@ export default function addproduct() {
     }));
   };
 
-  const handleDeleteVariant = (index: number, value: string | undefined, option: String[]): void => {
+  const handleDeleteVariant = (
+    index: number,
+    value: string | undefined,
+    option: String[]
+  ): void => {
     const updatedOptionVariant = optionVariant.map((variant) => {
       if (variant.value === value) {
         return {
@@ -137,7 +140,7 @@ export default function addproduct() {
 
     const updatedVariants = variants.filter((variant, i) => variant.variant !== value);
     const updatedOptionsTable = data.options.filter((_, i) => i !== index);
-    const variantData: Variant[] = []
+    const variantData: Variant[] = [];
     const updatedVariantsTable = updatedOptionsTable.forEach((item) => {
       item.value.forEach((value) => {
         const variant = {
@@ -150,9 +153,9 @@ export default function addproduct() {
           sku: '',
         };
 
-        variantData.push(variant)
-      })
-    })
+        variantData.push(variant);
+      });
+    });
     setOptionVariant(updatedOptionVariant);
     setVariants(updatedVariants);
     setData((prev) => ({
@@ -160,7 +163,6 @@ export default function addproduct() {
       options: updatedOptionsTable,
       variants: variantData,
     }));
-
   };
 
   const handleChangeVariant = (index: number, e: OptionVariants | null): void => {
@@ -209,7 +211,11 @@ export default function addproduct() {
     setOptionSelected(updated);
   };
 
-  const handleChangeOption = (variant: String | undefined, index: number, e: OptionVariants[] | null): void => {
+  const handleChangeOption = (
+    variant: String | undefined,
+    index: number,
+    e: OptionVariants[] | null
+  ): void => {
     if (!e) return;
     console.log('value ==>', e);
 
@@ -227,30 +233,28 @@ export default function addproduct() {
     const isOptions = newOption.map((item: VariantsData) => {
       lengthOptions.push(item.option.length);
     });
-    const isChecked = lengthOptions.every((length: number | void) => length === 0)
+    const isChecked = lengthOptions.every((length: number | void) => length === 0);
     console.log('isChecked ==>', isChecked);
-
+    let updatedNewOption: VariantsData[] = [];
     if (isChecked && e.length === 0) {
-
-      // const selectedVariant = optionVariant.map((item, idx) => {
-      //   return {
-      //     ...item,
-      //     isSelected: item.value === optionVariant[0].value,
-      //   };
-      // });
-
-      // const selectedVariant = [...optionVariant];
-      // optionVariant[1].isSelected = false
-      const updatedNewOption = newOption.filter((_, idx: number) => idx === 0);
-      // setOptionVariant(selectedVariant);
-      setVariants(updatedNewOption)
+      updatedNewOption = newOption.filter((_, idx: number) => idx === 0);
+      const selectedVariant = optionVariant.map((item, idx) => {
+        return {
+          ...item,
+          isSelected: item.value === updatedNewOption[0].variant,
+        };
+      });
+      setOptionVariant(selectedVariant);
+      setVariants(updatedNewOption);
     } else {
-      setVariants(newOption)
+      setVariants(newOption);
     }
 
-    const dataVariant: Variant[] = []
-    const dataValue: Value[] = []
-    const valueOptions = variants.find((item: VariantsData, i: number) => item.variant !== variant) || { option: [''] };
+    const dataVariant: Variant[] = [];
+    const dataValue: Value[] = [];
+    const valueOptions = variants.find(
+      (item: VariantsData, i: number) => item.variant !== variant
+    ) || { option: [''] };
 
     if (e.length === 0) {
       valueOptions?.option.forEach((item: string) => {
@@ -262,13 +266,12 @@ export default function addproduct() {
           weight: '',
           discount: 0,
           sku: '',
-        }
-        dataVariant.push(variant)
-      })
+        };
+        dataVariant.push(variant);
+      });
     } else {
       valueOptions?.option.forEach((item: string) => {
         e.forEach((data: OptionVariants) => {
-
           const variant = {
             option1: index === 0 ? data.value : item,
             option2: index === 1 ? data.value : item,
@@ -277,18 +280,18 @@ export default function addproduct() {
             weight: '',
             discount: 0,
             sku: '',
-          }
-          dataVariant.push(variant)
-        })
-      })
+          };
+          dataVariant.push(variant);
+        });
+      });
     }
 
     e.forEach((data: OptionVariants) => {
       const value = {
         name: data.value,
-      }
-      dataValue.push(value)
-    })
+      };
+      dataValue.push(value);
+    });
     console.log('valueOptions =>', valueOptions);
 
     const colorOrder = variants && variants[0]?.option;
@@ -300,7 +303,7 @@ export default function addproduct() {
         return -1; // a (misalnya 'Blue') datang sebelum b ('Red')
       }
       if ((a.option1 || '') > (b.option1 || '')) {
-        return 1;  // a ('Red') datang setelah b ('Blue')
+        return 1; // a ('Red') datang setelah b ('Blue')
       }
 
       // --- 2. Perbandingan Tingkat Kedua (option2 / Size) ---
@@ -319,13 +322,34 @@ export default function addproduct() {
 
     setData((prev) => {
       const newOptions = [...prev.options];
-      newOptions[index] = {
-        ...prev.options[index],
-        value: dataValue,
-      };
-      return { ...prev, options: newOptions, variants: sortingVariant };
+      if (isChecked && e.length === 0) {
+        const updatedNewOptions = newOptions
+          .filter((data, idx) => data.name === updatedNewOption[0].variant)
+          .map((item, idx) => {
+            return {
+              ...item,
+              value: [],
+            };
+          });
+        const variant = {
+          option1: '',
+          option2: '',
+          price: 0,
+          quantity: 0,
+          weight: '',
+          discount: 0,
+          sku: '',
+        };
+        console.log('updatedNewOptions =>', updatedNewOptions);
+        return { ...prev, options: updatedNewOptions, variants: [variant] };
+      } else {
+        newOptions[index] = {
+          ...prev.options[index],
+          value: dataValue,
+        };
+        return { ...prev, options: newOptions, variants: sortingVariant };
+      }
     });
-
   };
 
   const handleOptionVariant = () => {
@@ -343,8 +367,8 @@ export default function addproduct() {
 
   const handleChangeNoVariants = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
     setData((prev) => {
-      const newVariant = [...prev.variants]
-      newVariant[0] = { ...newVariant[0], [field]: e.target.value, option1: '', option2: '' }
+      const newVariant = [...prev.variants];
+      newVariant[0] = { ...newVariant[0], [field]: e.target.value, option1: '', option2: '' };
       return {
         ...prev,
         variants: newVariant,
@@ -353,13 +377,17 @@ export default function addproduct() {
     });
   };
 
-  const handleInputChange = (index: number, field: String, e: React.ChangeEvent<HTMLInputElement>) => {
-    setData(prev => {
+  const handleInputChange = (
+    index: number,
+    field: String,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setData((prev) => {
       const newVariants = [...prev.variants];
       newVariants[index] = { ...newVariants[index], [field as string]: e.target.value };
       return { ...prev, variants: newVariants };
-    })
-  }
+    });
+  };
 
   useEffect(() => {
     console.log('data==> ', data);
@@ -388,7 +416,9 @@ export default function addproduct() {
             Category <Asterisk />
           </Label>
           <Select
-            value={data.categoryName ? { value: data.categoryName, label: data.categoryName } : null}
+            value={
+              data.categoryName ? { value: data.categoryName, label: data.categoryName } : null
+            }
             className="col-span-2"
             options={CategoryOptions}
             onChange={(e) => {
@@ -437,15 +467,15 @@ export default function addproduct() {
                   text={
                     typeModal == 'notImage'
                       ? {
-                        title: 'Warning!',
-                        description: 'Only JPEG, JPG and PNG images are allowed',
-                        button: '',
-                      }
+                          title: 'Warning!',
+                          description: 'Only JPEG, JPG and PNG images are allowed',
+                          button: '',
+                        }
                       : {
-                        title: 'Warning!',
-                        description: 'You can only upload up to 3 images.',
-                        button: '',
-                      }
+                          title: 'Warning!',
+                          description: 'You can only upload up to 3 images.',
+                          button: '',
+                        }
                   }
                 />
               </div>
@@ -499,6 +529,7 @@ export default function addproduct() {
                       options={handleOptionVariant()}
                       className="basic-single col-span-3"
                       onChange={(e) => handleChangeVariant(index, e)}
+                      isDisabled={variant.option.length > 0 || variants[1]?.option.length > 0}
                     />
                   </div>
                   <div className="grid grid-cols-5 gap-6">
@@ -508,7 +539,10 @@ export default function addproduct() {
                     <Select
                       isMulti
                       name="option"
-                      value={data.options[index]?.value.map((item) => ({ value: item.name, label: item.name }))}
+                      value={data.options[index]?.value?.map((item) => ({
+                        value: item.name,
+                        label: item.name,
+                      }))}
                       options={optionSelected && optionSelected[index].option}
                       className="basic-multi-select col-span-3"
                       onChange={(e) => handleChangeOption(variant.variant, index, Array.from(e))}
@@ -540,21 +574,15 @@ export default function addproduct() {
         )}
         {variants.length > 0 && (
           <Table>
-            {variants[0].option?.length == 0 && (
+            {data.variants.length == 0 && (
               <TableCaption>A list of your recent Variants.</TableCaption>
             )}
             {/* Header Tabel */}
             <TableHeader>
               <TableRow>
                 <>
-                  <TableHead>
-                    {data?.options[0]?.name || 'Variant 1'}
-                  </TableHead>
-                  {variants[1] && (
-                    <TableHead>
-                      {data?.options[1]?.name || 'Variant 2'}
-                    </TableHead>
-                  )}
+                  <TableHead>{data?.options[0]?.name || 'Variant 1'}</TableHead>
+                  {variants[1] && <TableHead>{data?.options[1]?.name || 'Variant 2'}</TableHead>}
                   <TableHead>Price (IDR)</TableHead>
                   <TableHead>Quantity</TableHead>
                   <TableHead>Weight (gram)</TableHead>
@@ -566,56 +594,54 @@ export default function addproduct() {
 
             <TableBody>
               {data.variants.map((variant, index) => {
-
                 const isNewColorGroup = variant.option1 !== lastColor;
 
-                let rowSpan = 0
+                let rowSpan = 0;
 
                 if (isNewColorGroup) {
-                  rowSpan = data.variants.filter(v => v.option1 === variant.option1).length;
+                  rowSpan = data.variants.filter((v) => v.option1 === variant.option1).length;
                   lastColor = variant.option1;
                 }
 
                 return (
                   <TableRow key={index}>
-                    {isNewColorGroup && (
-                      <TableCell rowSpan={rowSpan}>
-                        {variant.option1}
-                      </TableCell>
-                    )}
-                    {variants[1] && (
-                      <TableCell>{variant.option2}</TableCell>
-                    )}
+                    {isNewColorGroup && <TableCell rowSpan={rowSpan}>{variant.option1}</TableCell>}
+                    {variants[1] && <TableCell>{variant.option2}</TableCell>}
                     <TableCell>
-                      <Input className="w-[80px]"
+                      <Input
+                        className="w-[80px]"
                         type="number"
                         value={variant.price || 0}
                         onChange={(e) => handleInputChange(index, 'price', e)}
                       />
                     </TableCell>
                     <TableCell>
-                      <Input className="w-[80px]"
+                      <Input
+                        className="w-[80px]"
                         type="number"
                         value={variant.quantity || 0}
                         onChange={(e) => handleInputChange(index, 'quantity', e)}
                       />
                     </TableCell>
                     <TableCell>
-                      <Input className="w-[80px]"
+                      <Input
+                        className="w-[80px]"
                         type="number"
                         value={variant.weight.toString() || ''}
                         onChange={(e) => handleInputChange(index, 'weight', e)}
                       />
                     </TableCell>
                     <TableCell>
-                      <Input className="w-[80px]"
+                      <Input
+                        className="w-[80px]"
                         type="number"
                         value={variant.discount || ''}
                         onChange={(e) => handleInputChange(index, 'discount', e)}
                       />
                     </TableCell>
                     <TableCell>
-                      <Input className="w-[80px]"
+                      <Input
+                        className="w-[80px]"
                         type="text"
                         value={variant.sku || ''}
                         onChange={(e) => handleInputChange(index, 'sku', e)}
@@ -635,7 +661,7 @@ export default function addproduct() {
               </Label>
               <Input
                 value={data.options.length === 0 ? data.variants[0]?.price : ''}
-                type='number'
+                type="number"
                 className="col-span-2"
                 onChange={(e) => handleChangeNoVariants(e, 'price')}
                 id="Price"
@@ -648,7 +674,7 @@ export default function addproduct() {
               </Label>
               <Input
                 value={data.options.length === 0 ? data.variants[0]?.quantity : ''}
-                type='number'
+                type="number"
                 className="col-span-2"
                 onChange={(e) => handleChangeNoVariants(e, 'quantity')}
                 id="Quantity"
@@ -673,7 +699,7 @@ export default function addproduct() {
               </Label>
               <Input
                 value={data.options.length === 0 ? (data.variants[0]?.weight ?? '').toString() : ''}
-                type='number'
+                type="number"
                 className="col-span-2"
                 onChange={(e) => handleChangeNoVariants(e, 'weight')}
                 id="Weight"
@@ -686,7 +712,7 @@ export default function addproduct() {
               </Label>
               <Input
                 value={data.options.length === 0 ? data.variants[0]?.discount : ''}
-                type='number'
+                type="number"
                 className="col-span-2"
                 onChange={(e) => handleChangeNoVariants(e, 'discount')}
                 id="Discount"
