@@ -124,7 +124,7 @@ export default function addproduct() {
     }));
   };
 
-  const handleDeleteVariant = (index: number, value: string, option: String[]): void => {
+  const handleDeleteVariant = (index: number, value: string | undefined, option: String[]): void => {
     const updatedOptionVariant = optionVariant.map((variant) => {
       if (variant.value === value) {
         return {
@@ -197,7 +197,7 @@ export default function addproduct() {
     const dataOptionTable = { name: e.value, value: [] };
     setData((prev) => ({
       ...prev,
-      options: [...prev.options, dataOptionTable],
+      options: index === 0 ? [dataOptionTable] : [...prev.options, dataOptionTable],
     }));
   };
 
@@ -209,8 +209,9 @@ export default function addproduct() {
     setOptionSelected(updated);
   };
 
-  const handleChangeOption = (index: number, e: OptionVariants[] | null): void => {
+  const handleChangeOption = (variant: String | undefined, index: number, e: OptionVariants[] | null): void => {
     if (!e) return;
+    console.log('value ==>', e);
 
     let newOptions: string[] = [];
     e.map((option: { value: string }) => {
@@ -219,21 +220,43 @@ export default function addproduct() {
 
     const newOption = [...variants];
     newOption[index] = { ...newOption[index], option: newOptions };
-    setVariants(newOption);
+    // setVariants(newOption)
+
+    // newOption[1]?.option.length === 0 && e.length === 0 ? setVariants(newOption.filter((item: VariantsData) => item.variant === variant)) : setVariants(newOption);
+    let lengthOptions: number[] = [];
+    const isOptions = newOption.map((item: VariantsData) => {
+      lengthOptions.push(item.option.length);
+    });
+    const isChecked = lengthOptions.every((length: number | void) => length === 0)
+    console.log('isChecked ==>', isChecked);
+
+    if (isChecked && e.length === 0) {
+
+      // const selectedVariant = optionVariant.map((item, idx) => {
+      //   return {
+      //     ...item,
+      //     isSelected: item.value === optionVariant[0].value,
+      //   };
+      // });
+
+      // const selectedVariant = [...optionVariant];
+      // optionVariant[1].isSelected = false
+      const updatedNewOption = newOption.filter((_, idx: number) => idx === 0);
+      // setOptionVariant(selectedVariant);
+      setVariants(updatedNewOption)
+    } else {
+      setVariants(newOption)
+    }
 
     const dataVariant: Variant[] = []
-
-
-
     const dataValue: Value[] = []
-    const valueOptions = variants.find((item: VariantsData, i: number) => index === 0 ? item.variant === 'Size' : item.variant === 'Color') || { option: [''] };
+    const valueOptions = variants.find((item: VariantsData, i: number) => item.variant !== variant) || { option: [''] };
 
-    valueOptions?.option.forEach((item: string) => {
-      e.forEach((data: OptionVariants) => {
-
+    if (e.length === 0) {
+      valueOptions?.option.forEach((item: string) => {
         const variant = {
-          option1: index === 0 ? data.value : item,
-          option2: index === 1 ? data.value : item,
+          option1: item,
+          option2: '',
           price: 0,
           quantity: 0,
           weight: '',
@@ -242,7 +265,23 @@ export default function addproduct() {
         }
         dataVariant.push(variant)
       })
-    })
+    } else {
+      valueOptions?.option.forEach((item: string) => {
+        e.forEach((data: OptionVariants) => {
+
+          const variant = {
+            option1: index === 0 ? data.value : item,
+            option2: index === 1 ? data.value : item,
+            price: 0,
+            quantity: 0,
+            weight: '',
+            discount: 0,
+            sku: '',
+          }
+          dataVariant.push(variant)
+        })
+      })
+    }
 
     e.forEach((data: OptionVariants) => {
       const value = {
@@ -250,6 +289,7 @@ export default function addproduct() {
       }
       dataValue.push(value)
     })
+    console.log('valueOptions =>', valueOptions);
 
     const colorOrder = variants && variants[0]?.option;
     const sizeOrder = variants && variants[1]?.option;
@@ -324,6 +364,7 @@ export default function addproduct() {
   useEffect(() => {
     console.log('data==> ', data);
     console.log('variants==> ', variants);
+    console.log('optionVariant==> ', optionVariant);
   }, [data, variants]);
 
   return (
@@ -470,7 +511,7 @@ export default function addproduct() {
                       value={data.options[index]?.value.map((item) => ({ value: item.name, label: item.name }))}
                       options={optionSelected && optionSelected[index].option}
                       className="basic-multi-select col-span-3"
-                      onChange={(e) => handleChangeOption(index, Array.from(e))}
+                      onChange={(e) => handleChangeOption(variant.variant, index, Array.from(e))}
                       onFocus={() => handleFocus(index)}
                       isDisabled={!variants[index].variant}
                     />

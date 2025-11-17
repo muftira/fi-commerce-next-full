@@ -67,7 +67,7 @@ export type UserLogin = {
 };
 
 export type VariantsData = {
-  variant: string;
+  variant?: string;
   option: string[];
 }
 
