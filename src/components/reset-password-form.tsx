@@ -52,7 +52,11 @@ export default function CardWithForm() {
       newPassword: data.password,
       email: email,
     };
-    const response = await fetchData('POST', `api/user/reset-password?token=${token}`, submitedData);
+    const response = await fetchData(
+      'POST',
+      `api/user/reset-password?token=${token}`,
+      submitedData
+    );
 
     if (response.success) {
       setIsValid(true);

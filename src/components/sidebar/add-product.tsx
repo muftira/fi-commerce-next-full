@@ -141,27 +141,36 @@ export default function addproduct() {
     const updatedVariants = variants.filter((variant, i) => variant.variant !== value);
     const updatedOptionsTable = data.options.filter((_, i) => i !== index);
     const variantData: Variant[] = [];
-    const updatedVariantsTable = updatedOptionsTable.forEach((item) => {
+    let variant = {
+      option1: '',
+      option2: '',
+      price: 0,
+      quantity: 0,
+      weight: '',
+      discount: 0,
+      sku: '',
+    };
+    updatedOptionsTable.forEach((item) => {
       item.value.forEach((value) => {
-        const variant = {
+        variant = {
+          ...variant,
           option1: value.name,
-          option2: '',
-          price: 0,
-          quantity: 0,
-          weight: '',
-          discount: 0,
-          sku: '',
         };
 
         variantData.push(variant);
       });
     });
+
+    const isvariantData =
+      updatedOptionsTable[0]?.value.length === 0 || updatedOptionsTable.length === 0
+        ? [variant]
+        : variantData;
     setOptionVariant(updatedOptionVariant);
     setVariants(updatedVariants);
     setData((prev) => ({
       ...prev,
       options: updatedOptionsTable,
-      variants: variantData,
+      variants: isvariantData,
     }));
   };
 
@@ -217,7 +226,6 @@ export default function addproduct() {
     e: OptionVariants[] | null
   ): void => {
     if (!e) return;
-    console.log('value ==>', e);
 
     let newOptions: string[] = [];
     e.map((option: { value: string }) => {
@@ -226,15 +234,13 @@ export default function addproduct() {
 
     const newOption = [...variants];
     newOption[index] = { ...newOption[index], option: newOptions };
-    // setVariants(newOption)
 
-    // newOption[1]?.option.length === 0 && e.length === 0 ? setVariants(newOption.filter((item: VariantsData) => item.variant === variant)) : setVariants(newOption);
     let lengthOptions: number[] = [];
     const isOptions = newOption.map((item: VariantsData) => {
       lengthOptions.push(item.option.length);
     });
     const isChecked = lengthOptions.every((length: number | void) => length === 0);
-    console.log('isChecked ==>', isChecked);
+
     let updatedNewOption: VariantsData[] = [];
     if (isChecked && e.length === 0) {
       updatedNewOption = newOption.filter((_, idx: number) => idx === 0);
@@ -292,7 +298,6 @@ export default function addproduct() {
       };
       dataValue.push(value);
     });
-    console.log('valueOptions =>', valueOptions);
 
     const colorOrder = variants && variants[0]?.option;
     const sizeOrder = variants && variants[1]?.option;
@@ -340,7 +345,6 @@ export default function addproduct() {
           discount: 0,
           sku: '',
         };
-        console.log('updatedNewOptions =>', updatedNewOptions);
         return { ...prev, options: updatedNewOptions, variants: [variant] };
       } else {
         newOptions[index] = {
@@ -368,7 +372,7 @@ export default function addproduct() {
   const handleChangeNoVariants = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
     setData((prev) => {
       const newVariant = [...prev.variants];
-      newVariant[0] = { ...newVariant[0], [field]: e.target.value, option1: '', option2: '' };
+      newVariant[0] = { ...newVariant[0], [field]: field === 'sku' || field === 'weight' ? e.target.value : Number(e.target.value), option1: '', option2: '' };
       return {
         ...prev,
         variants: newVariant,
@@ -384,16 +388,14 @@ export default function addproduct() {
   ) => {
     setData((prev) => {
       const newVariants = [...prev.variants];
-      newVariants[index] = { ...newVariants[index], [field as string]: e.target.value };
+      newVariants[index] = { ...newVariants[index], [field as string]: field === 'sku' || field === 'weight' ? e.target.value : Number(e.target.value) };
       return { ...prev, variants: newVariants };
     });
   };
 
   useEffect(() => {
     console.log('data==> ', data);
-    console.log('variants==> ', variants);
-    console.log('optionVariant==> ', optionVariant);
-  }, [data, variants]);
+  }, [data]);
 
   return (
     <div className="p-4">
@@ -467,15 +469,15 @@ export default function addproduct() {
                   text={
                     typeModal == 'notImage'
                       ? {
-                          title: 'Warning!',
-                          description: 'Only JPEG, JPG and PNG images are allowed',
-                          button: '',
-                        }
+                        title: 'Warning!',
+                        description: 'Only JPEG, JPG and PNG images are allowed',
+                        button: '',
+                      }
                       : {
-                          title: 'Warning!',
-                          description: 'You can only upload up to 3 images.',
-                          button: '',
-                        }
+                        title: 'Warning!',
+                        description: 'You can only upload up to 3 images.',
+                        button: '',
+                      }
                   }
                 />
               </div>
@@ -539,10 +541,12 @@ export default function addproduct() {
                     <Select
                       isMulti
                       name="option"
-                      value={data.options[index]?.value?.map((item) => ({
-                        value: item.name,
-                        label: item.name,
-                      }))}
+                      value={
+                        data.options[index]?.value?.map((item) => ({
+                          value: item.name,
+                          label: item.name,
+                        })) || []
+                      }
                       options={optionSelected && optionSelected[index].option}
                       className="basic-multi-select col-span-3"
                       onChange={(e) => handleChangeOption(variant.variant, index, Array.from(e))}
@@ -611,7 +615,7 @@ export default function addproduct() {
                       <Input
                         className="w-[80px]"
                         type="number"
-                        value={variant.price || 0}
+                        value={variant.price || ''}
                         onChange={(e) => handleInputChange(index, 'price', e)}
                       />
                     </TableCell>
@@ -619,7 +623,7 @@ export default function addproduct() {
                       <Input
                         className="w-[80px]"
                         type="number"
-                        value={variant.quantity || 0}
+                        value={variant.quantity || ''}
                         onChange={(e) => handleInputChange(index, 'quantity', e)}
                       />
                     </TableCell>
@@ -627,7 +631,7 @@ export default function addproduct() {
                       <Input
                         className="w-[80px]"
                         type="number"
-                        value={variant.weight.toString() || ''}
+                        value={variant.weight?.toString() || ''}
                         onChange={(e) => handleInputChange(index, 'weight', e)}
                       />
                     </TableCell>
@@ -660,7 +664,7 @@ export default function addproduct() {
                 Price <Asterisk />
               </Label>
               <Input
-                value={data.options.length === 0 ? data.variants[0]?.price : ''}
+                value={data.variants[0]?.price || ''}
                 type="number"
                 className="col-span-2"
                 onChange={(e) => handleChangeNoVariants(e, 'price')}
@@ -673,7 +677,7 @@ export default function addproduct() {
                 Quantity <Asterisk />
               </Label>
               <Input
-                value={data.options.length === 0 ? data.variants[0]?.quantity : ''}
+                value={data.variants[0]?.quantity || ''}
                 type="number"
                 className="col-span-2"
                 onChange={(e) => handleChangeNoVariants(e, 'quantity')}
@@ -686,7 +690,7 @@ export default function addproduct() {
                 SKU <Asterisk />
               </Label>
               <Input
-                value={data.options.length === 0 ? data.variants[0]?.sku : ''}
+                value={data.variants[0]?.sku || ''}
                 className="col-span-2"
                 onChange={(e) => handleChangeNoVariants(e, 'sku')}
                 id="SKU"
@@ -698,7 +702,7 @@ export default function addproduct() {
                 Weight <Asterisk />
               </Label>
               <Input
-                value={data.options.length === 0 ? (data.variants[0]?.weight ?? '').toString() : ''}
+                value={(data.variants[0]?.weight ?? '').toString() || ''}
                 type="number"
                 className="col-span-2"
                 onChange={(e) => handleChangeNoVariants(e, 'weight')}
@@ -711,7 +715,7 @@ export default function addproduct() {
                 Discount
               </Label>
               <Input
-                value={data.options.length === 0 ? data.variants[0]?.discount : ''}
+                value={data.variants[0]?.discount || ''}
                 type="number"
                 className="col-span-2"
                 onChange={(e) => handleChangeNoVariants(e, 'discount')}

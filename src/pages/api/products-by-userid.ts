@@ -8,9 +8,9 @@ const router = createRouter<NextApiRequest, NextApiResponse>();
 router.get(authentication, adminRole, getAllProductsbyUserId);
 
 export const config = {
-    api: {
-        bodyParser: false, // Wajib disable bodyParser bawaan kalau pakai multer
-    },
+  api: {
+    bodyParser: false, // Wajib disable bodyParser bawaan kalau pakai multer
+  },
 };
 
 export default router.handler();

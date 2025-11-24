@@ -4,6 +4,6 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 const router = createRouter<NextApiRequest, NextApiResponse>();
 
-router.post(forgotPassword)
+router.post(forgotPassword);
 
 export default router.handler();

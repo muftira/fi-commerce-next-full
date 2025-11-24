@@ -7,12 +7,17 @@ import upload from '@/middlewares/multer';
 
 const router = createRouter<NextApiRequest, NextApiResponse>();
 
-router.post(authentication, adminRole, adaptMiddleware(upload.array('imageProduct', 3)), addProduct);
+router.post(
+  authentication,
+  adminRole,
+  adaptMiddleware(upload.array('imageProduct', 3)),
+  addProduct
+);
 
 export const config = {
-    api: {
-        bodyParser: false, // Wajib disable bodyParser bawaan kalau pakai multer
-    },
+  api: {
+    bodyParser: false, // Wajib disable bodyParser bawaan kalau pakai multer
+  },
 };
 
 export default router.handler();

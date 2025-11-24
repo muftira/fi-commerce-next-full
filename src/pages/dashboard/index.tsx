@@ -36,34 +36,43 @@ export default function Page() {
               <BreadcrumbList>
                 {activeComponent === 'home' ? (
                   <BreadcrumbItem className="hidden md:block cursor-pointer">
-                  <BreadcrumbLink onClick={() => dispatch(setActiveComponent('home'))}>Home</BreadcrumbLink>
-                </BreadcrumbItem>) : (
-                  activeComponent === 'orders' ? (
-                    <BreadcrumbItem className="hidden md:block cursor-pointer">
-                      <BreadcrumbLink onClick={() => dispatch(setActiveComponent('orders'))}>Orders</BreadcrumbLink>
-                    </BreadcrumbItem>
-                  ) : activeComponent === 'addproduct' || activeComponent === 'listproducts' ? (
-                    <BreadcrumbItem className="hidden md:block cursor-pointer">
-                      <BreadcrumbLink onClick={() => dispatch(setActiveComponent('listproducts'))}>Product</BreadcrumbLink>
-                    </BreadcrumbItem>
-                  ) : null
-                )}
+                    <BreadcrumbLink onClick={() => dispatch(setActiveComponent('home'))}>
+                      Home
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                ) : activeComponent === 'orders' ? (
+                  <BreadcrumbItem className="hidden md:block cursor-pointer">
+                    <BreadcrumbLink onClick={() => dispatch(setActiveComponent('orders'))}>
+                      Orders
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                ) : activeComponent === 'addproduct' || activeComponent === 'listproducts' ? (
+                  <BreadcrumbItem className="hidden md:block cursor-pointer">
+                    <BreadcrumbLink onClick={() => dispatch(setActiveComponent('listproducts'))}>
+                      Product
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                ) : null}
                 {activeComponent === 'addproduct' && (
-                  <><BreadcrumbSeparator className="hidden md:block" />
+                  <>
+                    <BreadcrumbSeparator className="hidden md:block" />
                     <BreadcrumbItem>
                       <BreadcrumbPage>Add Product</BreadcrumbPage>
-                    </BreadcrumbItem></>
+                    </BreadcrumbItem>
+                  </>
                 )}
                 {activeComponent === 'listproducts' && (
-                  <><BreadcrumbSeparator className="hidden md:block" />
+                  <>
+                    <BreadcrumbSeparator className="hidden md:block" />
                     <BreadcrumbItem>
                       <BreadcrumbPage>List Product</BreadcrumbPage>
-                    </BreadcrumbItem></>
+                    </BreadcrumbItem>
+                  </>
                 )}
               </BreadcrumbList>
             </Breadcrumb>
           </div>
-          <div className='flex items-center mr-6 gap-2'>
+          <div className="flex items-center mr-6 gap-2">
             <p>Mode :</p>
             <ModeToggle />
           </div>

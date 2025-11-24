@@ -4,6 +4,6 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 const router = createRouter<NextApiRequest, NextApiResponse>();
 
-router.post(loginUser)
+router.post(loginUser);
 
 export default router.handler();

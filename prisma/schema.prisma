@@ -114,7 +114,7 @@ model Variant {
   option2        String
   price          Int
   title          String
-  weight         String
+  weight         Int
   discount       Int      @default(0)
   sku            String
   compareAtPrice Int

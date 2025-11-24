@@ -14,8 +14,8 @@ const storage = new CloudinaryStorage({
         file.mimetype === 'image/png'
           ? 'png'
           : file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg'
-          ? 'jpg'
-          : 'jpg',
+            ? 'jpg'
+            : 'jpg',
       public_id: new Date().toISOString() + '-' + file.originalname,
     };
   },

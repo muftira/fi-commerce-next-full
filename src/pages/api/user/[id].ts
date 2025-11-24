@@ -8,13 +8,13 @@ import upload from '@/middlewares/multer';
 const router = createRouter<NextApiRequest, NextApiResponse>();
 
 router.get(authentication, getUserbyId);
-router.put(adaptMiddleware(upload.single('imageProfile')), authentication, updateUser)
-router.delete(authentication, adminRole, deleteUser)
+router.put(adaptMiddleware(upload.single('imageProfile')), authentication, updateUser);
+router.delete(authentication, adminRole, deleteUser);
 
 export const config = {
-    api: {
-        bodyParser: false, // Wajib disable bodyParser bawaan kalau pakai multer
-    },
+  api: {
+    bodyParser: false, // Wajib disable bodyParser bawaan kalau pakai multer
+  },
 };
 
 export default router.handler();

@@ -19,7 +19,7 @@ import { Login } from '@/types';
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
   const router = useRouter();
   const [hidePassword, setHidePassword] = useState<boolean>(false);
-    const [isLoader, setIsLoader] = useState<boolean>(false);
+  const [isLoader, setIsLoader] = useState<boolean>(false);
   const [loginData, setLoginData] = useState<Login>({
     status: true,
     email: '',
@@ -38,8 +38,8 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
           name: response.data?.data.data.fullName,
           role: response.data?.data.data.role,
           token: response.data?.data.token,
-          profilePicture : response.data?.data.data.imageUser,
-          email: response.data?.data.data.email
+          profilePicture: response.data?.data.data.imageUser,
+          email: response.data?.data.data.email,
         })
       );
       setIsLoader(false);

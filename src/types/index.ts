@@ -41,100 +41,99 @@ export type ResetPassword = {
 };
 
 export type UserResponse = {
-  id: number,
-  fullName: string,
-  email: string,
-  password: string,
-  address: string,
-  phone: string,
-  roleId: number,
-  isDeleted: boolean,
-  createdAt: Date,
-  updatedAt: Date
-
-}
+  id: number;
+  fullName: string;
+  email: string;
+  password: string;
+  address: string;
+  phone: string;
+  roleId: number;
+  isDeleted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 export type JwtPayload = {
   id: number;
   role: string;
   email: string;
-}
+};
 
 export type UserLogin = {
   name: string;
   email: string;
-  profilePicture: { url: string | null }
+  profilePicture: { url: string | null };
 };
 
 export type VariantsData = {
   variant?: string;
   option: string[];
-}
+};
 
 export type OptionVariants = {
-  value: string
+  value: string;
   label: string;
   isSelected?: boolean;
-}
+};
 
 export type OptionSelected = {
   option: OptionVariants[];
-}
+};
 
 export type RequestProduct = {
-  productName: string,
-  imageProduct: File[] | null,
-  categoryName: string,
-  description: string,
-  status: string,
-  sku: string,
-  options: Option[],
-  variants: Variant[]
-}
+  productName: string;
+  imageProduct: File[] | null;
+  categoryName: string;
+  description: string;
+  status: string;
+  sku: string;
+  options: Option[];
+  variants: Variant[];
+};
 
 export type Option = {
   id?: number;
   name: string;
   isDeleted?: boolean;
-  value: Value[] | []
-}
+  value: Value[] | [];
+};
 export type Value = {
   id?: number;
   name: string;
   value?: number;
   isDeleted?: boolean;
-}
+};
 
 export type Variant = {
-  id?: number,
-  option1: string | undefined,
-  option2: string | undefined,
-  price: number,
-  quantity: number,
-  weight: String,
-  discount: number,
-  isDeleted?: boolean
+  id?: number;
+  option1: string | undefined;
+  option2: string | undefined;
+  price: number;
+  quantity: number;
+  weight: String;
+  discount: number;
+  isDeleted?: boolean;
   sku: string;
-}
+};
 
 export type OptionBody = {
-  id?: number; 
-  name: string; 
-  createdAt?: Date; 
-  updatedAt?: Date; 
-  isDeleted?: boolean; 
+  id?: number;
+  name: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  isDeleted?: boolean;
   productId?: number | null;
-  value?: ValueBody[]
-}
+  value?: ValueBody[];
+};
 
 export type ValueBody = {
-  id?: number; 
-  name: string; 
-  createdAt?: Date; 
-  updatedAt?: Date; 
-  isDeleted?: boolean; 
+  id?: number;
+  name: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  isDeleted?: boolean;
   optionId?: number | null;
-}
+};
 
 export type VariantBody = {
   id?: number;
@@ -148,7 +147,4 @@ export type VariantBody = {
   sku?: string;
   compareAtPrice?: number;
   isDeleted?: boolean;
-}
-
-
-
+};
