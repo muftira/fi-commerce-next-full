@@ -34,7 +34,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
       localStorage.setItem(
         'fiCommerce',
         JSON.stringify({
-          user: response.data?.data.data.id,
+          id: response.data?.data.data.id,
           name: response.data?.data.data.fullName,
           role: response.data?.data.data.role,
           token: response.data?.data.token,

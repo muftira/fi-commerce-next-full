@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
+import { useDispatch } from 'react-redux';
+import { setActiveComponent } from '@/store/slices/sidebarSlice';
 
 // component
 import { Input } from '@/components/ui/input';
@@ -32,6 +36,7 @@ import {
   Variant,
   Value,
 } from '@/types';
+import { fetchData } from '@/utils/fetch';
 
 export default function addproduct() {
   const [images, setImages] = useState<File[]>([]);
@@ -43,6 +48,9 @@ export default function addproduct() {
     { option: [] },
   ]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isModalSubmit, setIsModalSubmit] = useState<boolean>(false);
+  const [isLoader, setIsLoader] = useState<boolean>(false);
+
   const [typeModal, setTypeModal] = useState<string>('');
 
   const [data, setData] = useState<RequestProduct>({
@@ -57,6 +65,9 @@ export default function addproduct() {
   });
 
   let lastColor: string | null | undefined = null;
+
+  const activeComponent = useSelector((state: RootState) => state.sidebar.activeComponent);
+  const dispatch = useDispatch();
 
   const handleChangePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     let files = e.target.files;
@@ -393,6 +404,42 @@ export default function addproduct() {
     });
   };
 
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.preventDefault();
+    setIsLoader(true);
+    const user = JSON.parse(localStorage.getItem('fiCommerce') || '{}');
+    console.log('user ==>', user.id);
+
+    // if(data){
+    //   setIsLoader(false);
+    //   setIsModalSubmit(true);
+    // }
+
+    const submitedData = new FormData();
+
+    submitedData.append('productName', data.productName);
+    submitedData.append('categoryName', data.categoryName);
+    submitedData.append('description', data.description);
+    submitedData.append('status', data.status);
+    submitedData.append('sku', data.sku);
+    submitedData.append('options', JSON.stringify(data.options));
+    submitedData.append('variants', JSON.stringify(data.variants));
+    if (data.imageProduct) {
+      data.imageProduct.forEach((image, index) => {
+        submitedData.append('imageProduct', image);
+      })
+    }
+    // console.log('submitedData==>', submitedData);
+
+    const response = await fetchData('POST', `api/product/add-product?useId=${user.id}`, submitedData, true);
+    console.log('response ==>', response);
+
+    if (response.success) {
+      setIsLoader(false);
+      setIsModalSubmit(true);
+    }
+  };
+
   useEffect(() => {
     console.log('data==> ', data);
   }, [data]);
@@ -727,7 +774,20 @@ export default function addproduct() {
         )}
       </div>
       <div className="flex justify-end gap-4">
-        <Button className="w-[120px] mt-10">Create Product</Button>
+        <Modal
+          className="mt-10"
+          isModalOpen={isModalSubmit}
+          handleSubmit={handleSubmit}
+          // validationData={checkEmail}
+          onClick={() => dispatch(setActiveComponent('listproducts'))}
+          isLoader={isLoader}
+          text={{
+            title: 'Success!',
+            description:
+              "Product has been created successfully!",
+            button: 'Create Product',
+          }}
+        />
       </div>
     </div>
   );
